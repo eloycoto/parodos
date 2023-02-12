@@ -20,20 +20,120 @@
         <spring.plugin.version>2.0.0.RELEASE</spring.plugin.version>
         <hypersistence-utils.version>3.1.0</hypersistence-utils.version>
         <springframework.boot.version>2.5.5</springframework.boot.version>
-        <junit.version>4.13.1</junit.version>
-        <slf4j.version>1.7.30</slf4j.version>
         <assertj.version>3.17.2</assertj.version>
+        <junit.version>4.13.1</junit.version>
         <mockito.version>3.5.13</mockito.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
     <dependencies>
-        <!-- START Slf4j Dependencies -->
+        <!-- START Web Dependencies -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- END Slf4j Dependencies -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter</artifactId>
+        </dependency>
+        <!-- END Web Dependencies -->
+
+        <!-- START Spring Security Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- END Spring Security Dependencies -->
+
+        <!-- START Spring Data Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.hypersistence</groupId>
+            <artifactId>hypersistence-utils-hibernate-52</artifactId>
+            <version>${hypersistence-utils.version}</version>
+        </dependency>
+        <!-- END Spring Data Mongodb Dependencies -->
+
+        <!-- START Health Check Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- END Health Check Dependencies -->
+
+        <!-- START Web Client using OpenFeign Dependencies -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <!-- END Web Client using OpenFeign Dependencies -->
+
+        <!-- START API Documentation Dependencies -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi-ui.version}</version>
+        </dependency>
+        <!-- END API Documentation Dependencies -->
+
+        <!-- START Parodos Library Dependencies -->
+        <dependency>
+            <groupId>com.redhat.parodos</groupId>
+            <artifactId>parodos-model-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.parodos</groupId>
+            <artifactId>workflow-engine</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.parodos</groupId>
+            <artifactId>workflow-examples</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- END Parodos Library Dependencies -->
+
+        <!-- START Developer Productivity Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${model.mapper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- END Developer Productivity Dependencies -->
+
+        <!-- START Misc Dependencies -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${common.io.version}</version>
+        </dependency>
+        <!-- END Misc Dependencies -->
 
         <!-- START Test Dependencies -->
         <dependency>
@@ -60,7 +160,26 @@
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- END Test Dependencies -->
+
+        <!-- START Paging Results Dependencies -->
+        <dependency>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
+        </dependency>
+        <!-- END Paging Results Dependencies -->
+
+        <!-- START AOP Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- END AOP Dependencies -->
     </dependencies>
 
     <dependencyManagement>
@@ -86,17 +205,18 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springframework.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 </project>
+
