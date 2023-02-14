@@ -17,17 +17,13 @@ package com.redhat.parodos.workflow.registry;
 
 import com.redhat.parodos.workflow.definition.entity.WorkFlowTaskDefinitionEntity;
 import com.redhat.parodos.workflows.definition.WorkFlowCheckerDefinition;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-// import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.Test;
 import org.junit.Before;
-
 import com.redhat.parodos.workflows.common.enums.WorkFlowType;
 import com.redhat.parodos.workflows.definition.WorkFlowDefinition;
 import com.redhat.parodos.workflows.definition.task.WorkFlowTaskDefinition;
@@ -109,57 +105,41 @@ public class BeanWorkFlowRegistryImplTest {
     @Test
     public void ComplicatedWorkloadAdded() {
         // given
-        List<WorkFlowTaskDefinition> taskList  = new ArrayList<WorkFlowTaskDefinition>();
-        WorkFlowTaskDefinition task1 = WorkFlowTaskDefinition.builder().name("test").build();
+        WorkFlowDefinition wfDefinition = getSampleWFDefinition("test");
+        wfDefinition.setTasks(Arrays.asList(
+                WorkFlowTaskDefinition.builder().name("test").build()));
+        WorkFlowDefinitionEntity wfEntity = getWFDefEntityFrom( wfDefinition);
+        this.wfDefinitions.add(wfDefinition);
 
-        taskList.add(task1);
-        WorkFlowDefinition wk = WorkFlowDefinition.builder()
+
+        // Mockito.when(workFlowDefinitionRepository.save(Mockito.any())).thenReturn(oo);
+
+        WorkFlowTaskDefinitionEntity workFlowTask = WorkFlowTaskDefinitionEntity
+                .builder()
                 .name("test")
-                .description("Failed description")
-                .author("alice")
-                .type(WorkFlowType.ASSESSMENT)
-                .tasks(taskList)
+                .description("test")
                 .build();
-        List<WorkFlowDefinition> workFlowDefinitions = new ArrayList<WorkFlowDefinition>();
-        workFlowDefinitions.add(wk);
-
-        List<WorkFlowTaskDefinition> workFlowTaskDefinitions = new ArrayList<WorkFlowTaskDefinition>();
-        List<WorkFlow> workFlowExecutions = new ArrayList<WorkFlow>();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        WorkFlowDefinitionRepository workFlowDefinitionRepository = Mockito.mock(WorkFlowDefinitionRepository.class);
-        WorkFlowTaskDefinitionRepository workFlowTaskDefinitionRepository = Mockito
-                .mock(WorkFlowTaskDefinitionRepository.class);
-        WorkFlowDefinitionEntity oo = WorkFlowDefinitionEntity.builder()
-                .name(wk.getName())
-                .description(wk.getDescription())
-                .type(wk.getType().name())
-                .author(wk.getAuthor())
-                .createDate(wk.getCreatedDate())
-                .modifyDate(wk.getCreatedDate())
-                .build();
-
-        oo.setId(UUID.randomUUID());
-        Mockito.when(workFlowDefinitionRepository.save(Mockito.any())).thenReturn(oo);
-
-        WorkFlowTaskDefinitionEntity workFlowTask = WorkFlowTaskDefinitionEntity.builder().name("test").description("test").build();
         workFlowTask.setId(UUID.randomUUID());
-        // List<WorkFlowTaskDefinitionEntity> workFlowTaskDefinitionsEntity = new ArrayList<WorkFlowTaskDefinitionEntity>();
-        // workFlowTaskDefinitionsEntity.add(workFlowTask);
-        Mockito.when(workFlowTaskDefinitionRepository.save(Mockito.any())).thenReturn(workFlowTask);
-        Mockito.when(workFlowTaskDefinitionRepository.findByWorkFlowDefinitionEntity(Mockito.any())).thenReturn(Arrays.asList(workFlowTask));
+
+        // Mocks
+        Mockito.when(this.wfDefinitionRepo.save(Mockito.any())).thenReturn(wfEntity);
+        Mockito.when(this.wfTaskDefinitionRepo.save(Mockito.any())).thenReturn(workFlowTask);
+        Mockito.when(this.wfTaskDefinitionRepo.findByWorkFlowDefinitionEntity(Mockito.any())).thenReturn(
+                Arrays.asList(workFlowTask));
 
         // when
-        BeanWorkFlowRegistryImpl beanWorkFlowRegistry = new BeanWorkFlowRegistryImpl(workFlowDefinitions,
-                workFlowTaskDefinitions, workFlowExecutions, workFlowDefinitionRepository,
-                workFlowTaskDefinitionRepository, objectMapper);
+        BeanWorkFlowRegistryImpl beanWorkFlowRegistry = new BeanWorkFlowRegistryImpl(
+                this.wfDefinitions,
+                this.wfTaskDefinitions,
+                this.wfExecutions,
+                this.wfDefinitionRepo,
+                this.wfTaskDefinitionRepo,
+                new ObjectMapper());
         // then
         assertNotEquals(beanWorkFlowRegistry, null);
-        WorkFlowDefinition workFlowDefinition = beanWorkFlowRegistry.getWorkFlowDefinitionById(oo.getId());
+        WorkFlowDefinition workFlowDefinition = beanWorkFlowRegistry.getWorkFlowDefinitionById(wfEntity.getId());
         assertEquals(workFlowDefinition.getName(), "test");
         assertEquals(workFlowDefinition.getTasks().size(), 1);
-        // Mockito.verify(workFlowDefinitionRepository, Mockito.times(2)).save(Mockito.any());
-        // Mockito.verify(workFlowTaskDefinitionRepository, Mockito.times(1)).save(null);
     }
 
 
@@ -231,5 +211,4 @@ public class BeanWorkFlowRegistryImplTest {
         assertNotEquals(beanWorkFlowRegistry, null);
         Mockito.verify(this.wfTaskDefinitionRepo, Mockito.times(1)).save(Mockito.any());
     }
-
 }
