@@ -18,10 +18,9 @@ package com.redhat.parodos.workflow.registry;
 import com.redhat.parodos.workflow.definition.entity.WorkFlowTaskDefinitionEntity;
 import com.redhat.parodos.workflows.definition.WorkFlowCheckerDefinition;
 import org.mockito.Mockito;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
+
 import org.junit.Test;
 import org.junit.Before;
 import com.redhat.parodos.workflows.common.enums.WorkFlowType;
@@ -147,7 +146,7 @@ public class BeanWorkFlowRegistryImplTest {
     public void AddWorkFlowWithTasks() {
         // given
         WorkFlowDefinition wfDefinition = getSampleWFDefinition("test");
-        wfDefinition.setTasks(Arrays.asList(
+        wfDefinition.setTasks(Collections.singletonList(
                 WorkFlowTaskDefinition.builder().name("test").build()));
         WorkFlowDefinitionEntity wfEntity = getWFDefEntityFrom( wfDefinition);
         this.wfDefinitions.add(wfDefinition);
@@ -163,7 +162,7 @@ public class BeanWorkFlowRegistryImplTest {
         Mockito.when(this.wfDefinitionRepo.save(Mockito.any())).thenReturn(wfEntity);
         Mockito.when(this.wfTaskDefinitionRepo.save(Mockito.any())).thenReturn(workFlowTask);
         Mockito.when(this.wfTaskDefinitionRepo.findByWorkFlowDefinitionEntity(Mockito.any())).thenReturn(
-                Arrays.asList(workFlowTask));
+                List.of(workFlowTask));
 
         // when
         BeanWorkFlowRegistryImpl beanWorkFlowRegistry = new BeanWorkFlowRegistryImpl(
