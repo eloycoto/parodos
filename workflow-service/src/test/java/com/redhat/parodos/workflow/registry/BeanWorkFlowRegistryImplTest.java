@@ -52,6 +52,47 @@ public class BeanWorkFlowRegistryImplTest {
         this.wfExecutions = new ArrayList<WorkFlow>();
     }
 
+    // helper functions
+    WorkFlowDefinition getSampleWFDefinition(String name) {
+        return WorkFlowDefinition.builder()
+                .name(name)
+                .description("Test Description")
+                .author("alice")
+                .type(WorkFlowType.ASSESSMENT)
+                .tasks(new ArrayList<WorkFlowTaskDefinition>())
+                .build();
+    }
+    WorkFlowDefinitionEntity getWFDefEntityFrom(WorkFlowDefinition wk) {
+        WorkFlowDefinitionEntity wkDefinitionEntity =  WorkFlowDefinitionEntity.builder()
+                .name(wk.getName())
+                .description(wk.getDescription())
+                .type(wk.getType().name())
+                .author(wk.getAuthor())
+                .createDate(wk.getCreatedDate())
+                .modifyDate(wk.getCreatedDate())
+                .build();
+        wkDefinitionEntity.setId(UUID.randomUUID());
+        return wkDefinitionEntity;
+    }
+
+    WorkFlowTaskDefinition getSampleWFTaskDefinition(String name,WorkFlowDefinition wfDefinition) {
+        return WorkFlowTaskDefinition.builder()
+                .name(name)
+                .description("test")
+                .workFlowDefinition(wfDefinition)
+                .build();
+    }
+
+    WorkFlowTaskDefinitionEntity getWFTaskDefEntityFrom(WorkFlowTaskDefinition wfTask) {
+        WorkFlowTaskDefinitionEntity wfTaskEntity = WorkFlowTaskDefinitionEntity
+                .builder()
+                .name(wfTask.getName())
+                .description(wfTask.getDescription())
+                .build();
+        wfTaskEntity.setId(UUID.randomUUID());
+        return wfTaskEntity;
+    }
+
     @Before
     public void initEach() {
         this.setUpDefinitions();
@@ -103,16 +144,13 @@ public class BeanWorkFlowRegistryImplTest {
 
 
     @Test
-    public void ComplicatedWorkloadAdded() {
+    public void AddWorkFlowWithTasks() {
         // given
         WorkFlowDefinition wfDefinition = getSampleWFDefinition("test");
         wfDefinition.setTasks(Arrays.asList(
                 WorkFlowTaskDefinition.builder().name("test").build()));
         WorkFlowDefinitionEntity wfEntity = getWFDefEntityFrom( wfDefinition);
         this.wfDefinitions.add(wfDefinition);
-
-
-        // Mockito.when(workFlowDefinitionRepository.save(Mockito.any())).thenReturn(oo);
 
         WorkFlowTaskDefinitionEntity workFlowTask = WorkFlowTaskDefinitionEntity
                 .builder()
@@ -142,55 +180,12 @@ public class BeanWorkFlowRegistryImplTest {
         assertEquals(workFlowDefinition.getTasks().size(), 1);
     }
 
-
-    WorkFlowDefinition getSampleWFDefinition(String name) {
-
-        return WorkFlowDefinition.builder()
-                .name(name)
-                .description("Failed description")
-                .author("alice")
-                .type(WorkFlowType.ASSESSMENT)
-                .tasks(new ArrayList<WorkFlowTaskDefinition>())
-                .build();
-    }
-        WorkFlowDefinitionEntity getWFDefEntityFrom(WorkFlowDefinition wk) {
-            WorkFlowDefinitionEntity wkDefinitionEntity =  WorkFlowDefinitionEntity.builder()
-                    .name(wk.getName())
-                    .description(wk.getDescription())
-                    .type(wk.getType().name())
-                    .author(wk.getAuthor())
-                    .createDate(wk.getCreatedDate())
-                    .modifyDate(wk.getCreatedDate())
-                    .build();
-            wkDefinitionEntity.setId(UUID.randomUUID());
-            return wkDefinitionEntity;
-        }
-
-    WorkFlowTaskDefinition getSampleWFTaskDefinition(String name,WorkFlowDefinition wfDefinition) {
-        return WorkFlowTaskDefinition.builder()
-                .name(name)
-                .description("test")
-                .workFlowDefinition(wfDefinition)
-                .build();
-    }
-
-    WorkFlowTaskDefinitionEntity getWFTaskDefEntityFrom(WorkFlowTaskDefinition wfTask) {
-        WorkFlowTaskDefinitionEntity wfTaskEntity = WorkFlowTaskDefinitionEntity
-                .builder()
-                .name(wfTask.getName())
-                .description(wfTask.getDescription())
-                .build();
-        wfTaskEntity.setId(UUID.randomUUID());
-        return wfTaskEntity;
-    }
-
     @Test
     public void TestWorkflowTaskDefinitions() {
         // given
         WorkFlowDefinition wfDefinition = getSampleWFDefinition("test");
         WorkFlowDefinitionEntity wfEntity = getWFDefEntityFrom( wfDefinition);
         Mockito.when(this.wfDefinitionRepo.findFirstByName(Mockito.any())).thenReturn(wfEntity);
-
 
         WorkFlowTaskDefinition wfTask = getSampleWFTaskDefinition("test-task",  wfDefinition);
         wfTask.setWorkFlowCheckerDefinition(WorkFlowCheckerDefinition.builder().nextWorkFlowDefinition( wfDefinition).build());
@@ -207,6 +202,7 @@ public class BeanWorkFlowRegistryImplTest {
                 this.wfDefinitionRepo,
                 this.wfTaskDefinitionRepo,
                 new ObjectMapper());
+
         // then
         assertNotEquals(beanWorkFlowRegistry, null);
         Mockito.verify(this.wfTaskDefinitionRepo, Mockito.times(1)).save(Mockito.any());
