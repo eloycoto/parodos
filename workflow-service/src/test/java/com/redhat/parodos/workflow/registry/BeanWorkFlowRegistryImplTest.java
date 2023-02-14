@@ -67,26 +67,21 @@ public class BeanWorkFlowRegistryImplTest {
         assertEquals(true, true);
     }
 
-    // @Test
+    @Test
     public void NoWorkFlowsAdded() {
-        // given
-        List<WorkFlowDefinition> workFlowDefinitions = new ArrayList<WorkFlowDefinition>();
-        List<WorkFlowTaskDefinition> workFlowTaskDefinitions = new ArrayList<WorkFlowTaskDefinition>();
-        List<WorkFlow> workFlowExecutions = new ArrayList<WorkFlow>();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        WorkFlowDefinitionRepository workFlowDefinitionRepository = Mockito.mock(WorkFlowDefinitionRepository.class);
-        WorkFlowTaskDefinitionRepository workFlowTaskDefinitionRepository = Mockito
-                .mock(WorkFlowTaskDefinitionRepository.class);
-
         // when
-        BeanWorkFlowRegistryImpl beanWorkFlowRegistry = new BeanWorkFlowRegistryImpl(workFlowDefinitions,
-                workFlowTaskDefinitions, workFlowExecutions, workFlowDefinitionRepository,
-                workFlowTaskDefinitionRepository, objectMapper);
+        BeanWorkFlowRegistryImpl beanWorkFlowRegistry = new BeanWorkFlowRegistryImpl(
+                this.wfDefinitions,
+                this.wfTaskDefinitions,
+                this.wfExecutions,
+                this.wfDefinitionRepo,
+                this.wfTaskDefinitionRepo,
+                new ObjectMapper());
+
         // then
         assertNotEquals(beanWorkFlowRegistry, null);
-        Mockito.verify(workFlowDefinitionRepository, Mockito.times(0)).save(Mockito.any());
-        Mockito.verify(workFlowTaskDefinitionRepository, Mockito.times(0)).save(Mockito.any());
+        Mockito.verify(this.wfTaskDefinitionRepo, Mockito.times(0)).save(Mockito.any());
+        Mockito.verify(this.wfTaskDefinitionRepo, Mockito.times(0)).save(Mockito.any());
     }
 
     @Test
