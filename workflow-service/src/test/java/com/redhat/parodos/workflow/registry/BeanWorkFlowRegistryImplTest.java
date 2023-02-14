@@ -40,16 +40,6 @@ public class BeanWorkFlowRegistryImplTest {
     private List<WorkFlowDefinition> wfDefinitions;
     private List<WorkFlowTaskDefinition> wfTaskDefinitions;
     private List<WorkFlow> wfExecutions;
-    void setMockRepositories() {
-        this.wfDefinitionRepo = Mockito.mock(WorkFlowDefinitionRepository.class);
-        this.wfTaskDefinitionRepo = Mockito.mock(WorkFlowTaskDefinitionRepository.class);
-    }
-
-    void setUpDefinitions() {
-        this.wfDefinitions = new ArrayList<WorkFlowDefinition>();
-        this.wfTaskDefinitions = new ArrayList<WorkFlowTaskDefinition>();
-        this.wfExecutions = new ArrayList<WorkFlow>();
-    }
 
     // helper functions
     WorkFlowDefinition getSampleWFDefinition(String name) {
@@ -94,8 +84,14 @@ public class BeanWorkFlowRegistryImplTest {
 
     @Before
     public void initEach() {
-        this.setUpDefinitions();
-        this.setMockRepositories();
+        // Init fake repositories using Mockito
+        this.wfDefinitionRepo = Mockito.mock(WorkFlowDefinitionRepository.class);
+        this.wfTaskDefinitionRepo = Mockito.mock(WorkFlowTaskDefinitionRepository.class);
+
+        // Init fake arrays to make it faster to work within the test
+        this.wfDefinitions = new ArrayList<WorkFlowDefinition>();
+        this.wfTaskDefinitions = new ArrayList<WorkFlowTaskDefinition>();
+        this.wfExecutions = new ArrayList<WorkFlow>();
     }
     @Test
     public void NoWorkFlowsAdded() {
