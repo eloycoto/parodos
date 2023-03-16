@@ -15,12 +15,18 @@
  */
 package com.redhat.parodos.workflow.task;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.parodos.workflow.task.enums.WorkFlowTaskOutput;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.redhat.parodos.workflow.task.parameter.WorkFlowTaskParameter;
+import com.redhat.parodos.workflow.task.parameter.WorkFlowTaskParameterType;
 import com.redhat.parodos.workflows.work.Work;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Basic Contract for Work in the Infrastructure Service
@@ -51,5 +57,55 @@ public interface WorkFlowTask extends Work {
 		return Collections.emptyList();
 
 	}
+
+	default String GetAsJsonSchema() {
+		HashMap<String, Map<String, String>> result = new HashMap<>();
+		for (WorkFlowTaskParameter workFlowTaskParameter : this.getWorkFlowTaskParameters()) {
+			Map<String, String> properties = Map.ofEntries(
+					Map.entry("required", String.format("%s", !workFlowTaskParameter.isOptional())),
+					Map.entry("description", workFlowTaskParameter.getDescription())
+					);
+			workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
+
+			switch (workFlowTaskParameter.getType()) {
+				case PASSWORD:
+					properties.put("type", "string");
+					properties.put("format", "password");
+					break;
+				case TEXT:
+					properties.put("type", "string");
+					properties.put("format", "text");
+					break;
+				case EMAIL:
+					properties.put("type", "string");
+					properties.put("format", "email");
+					break;
+				case NUMBER:
+					properties.put("type", "number");
+					break;
+				case URL:
+					properties.put("type", "string");
+					properties.put("format", "url");
+					break;
+				case DATE:
+					properties.put("type", "string");
+					properties.put("format", "date");
+					break;
+				default:
+					break;
+			}
+			result.put(workFlowTaskParameter.getKey(), properties);
+
+
+		}
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			return objectMapper.writeValueAsString(result);
+		} catch (Exception e) {
+			return "{}";
+		}
+	}
+
 
 }
