@@ -105,15 +105,8 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
 			else { // WorkFlowTask
 				WorkFlowTask workFlowTask = (WorkFlowTask) work;
 				workId = workFlowTaskDefinitionRepository.save(WorkFlowTaskDefinition.builder()
-						.name(workFlowTask.getName()).parameters(WorkFlowDTOUtil.writeObjectValueAsString(
-								workFlowTask.getWorkFlowTaskParameters().stream().map(workFlowTaskParameter -> {
-									var hashMap = new HashMap<>();
-									hashMap.put("key", workFlowTaskParameter.getKey());
-									hashMap.put("description", workFlowTaskParameter.getDescription());
-									hashMap.put("type", workFlowTaskParameter.getType().name());
-									hashMap.put("optional", workFlowTaskParameter.isOptional());
-									return hashMap;
-								}).collect(Collectors.toList())))
+						.name(workFlowTask.getName())
+						.parameters(WorkFlowDTOUtil.writeObjectValueAsString(workFlowTask.getAsJsonSchema()))
 						.outputs(WorkFlowDTOUtil.writeObjectValueAsString(workFlowTask.getWorkFlowTaskOutputs()))
 						.workFlowDefinition(workFlowDefinition).createDate(new Date()).modifyDate(new Date()).build())
 						.getId();
@@ -132,9 +125,12 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
 		List<WorkFlowDefinitionResponseDTO> workFlowDefinitionResponseDTOs = new ArrayList<>();
 		workFlowDefinitionRepository.findByTypeIsNot(WorkFlowType.CHECKER).forEach(
 				workFlowDefinition -> workFlowDefinitionResponseDTOs.add(WorkFlowDefinitionResponseDTO.builder()
-						.id(workFlowDefinition.getId()).name(workFlowDefinition.getName()).parameters(WorkFlowDTOUtil
-								.readStringAsObject(workFlowDefinition.getParameters(), new TypeReference<>() {
-								}, List.of()))
+						.id(workFlowDefinition.getId())
+						.name(workFlowDefinition.getName())
+						.parameters(WorkFlowDTOUtil.readStringAsObject(
+										workFlowDefinition.getParameters(),
+										new TypeReference<>() {},
+										Map.of()))
 						.author(workFlowDefinition.getAuthor()).createDate(workFlowDefinition.getCreateDate())
 						.modifyDate(workFlowDefinition.getModifyDate()).type(workFlowDefinition.getType().name())
 						.processingType(workFlowDefinition.getProcessingType())
@@ -153,9 +149,10 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
 				.findByWorkFlowDefinitionIdOrderByCreateDateAsc(workFlowDefinition.getId()).stream()
 				.sorted(Comparator.comparing(WorkFlowWorkDefinition::getCreateDate)).collect(Collectors.toList());
 		return WorkFlowDefinitionResponseDTO.builder().id(workFlowDefinition.getId()).name(workFlowDefinition.getName())
-				.parameters(
-						WorkFlowDTOUtil.readStringAsObject(workFlowDefinition.getParameters(), new TypeReference<>() {
-						}, List.of()))
+				.parameters(WorkFlowDTOUtil.readStringAsObject(
+						workFlowDefinition.getParameters(),
+						new TypeReference<>() {},
+						Map.of()))
 				.author(workFlowDefinition.getAuthor()).createDate(workFlowDefinition.getCreateDate())
 				.modifyDate(workFlowDefinition.getModifyDate()).type(workFlowDefinition.getType().toString())
 				.processingType(workFlowDefinition.getProcessingType())
@@ -172,9 +169,10 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
 				.findByWorkFlowDefinitionIdOrderByCreateDateAsc(workFlowDefinition.getId()).stream()
 				.sorted(Comparator.comparing(WorkFlowWorkDefinition::getCreateDate)).collect(Collectors.toList());
 		return WorkFlowDefinitionResponseDTO.builder().id(workFlowDefinition.getId()).name(workFlowDefinition.getName())
-				.parameters(
-						WorkFlowDTOUtil.readStringAsObject(workFlowDefinition.getParameters(), new TypeReference<>() {
-						}, List.of()))
+				.parameters(WorkFlowDTOUtil.readStringAsObject(
+						workFlowDefinition.getParameters(),
+						new TypeReference<>() {},
+						Map.of()))
 				.author(workFlowDefinition.getAuthor()).createDate(workFlowDefinition.getCreateDate())
 				.modifyDate(workFlowDefinition.getModifyDate()).type(workFlowDefinition.getType().name())
 				.processingType(workFlowDefinition.getProcessingType())

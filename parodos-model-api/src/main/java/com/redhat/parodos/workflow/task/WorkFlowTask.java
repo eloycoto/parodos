@@ -58,13 +58,14 @@ public interface WorkFlowTask extends Work {
 
 	}
 
-	default String GetAsJsonSchema() {
+	default HashMap<String, Map<String, String>> getAsJsonSchema() {
 		HashMap<String, Map<String, String>> result = new HashMap<>();
+		taskParamsLoop:
 		for (WorkFlowTaskParameter workFlowTaskParameter : this.getWorkFlowTaskParameters()) {
-			Map<String, String> properties = Map.ofEntries(
+			Map<String, String> properties = new HashMap<>(Map.ofEntries(
 					Map.entry("required", String.format("%s", !workFlowTaskParameter.isOptional())),
 					Map.entry("description", workFlowTaskParameter.getDescription())
-					);
+			));
 			workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
 
 			switch (workFlowTaskParameter.getType()) {
@@ -92,20 +93,11 @@ public interface WorkFlowTask extends Work {
 					properties.put("format", "date");
 					break;
 				default:
-					break;
+					// is there is no proper type, does not need to be added at all
+					continue taskParamsLoop;
 			}
 			result.put(workFlowTaskParameter.getKey(), properties);
-
-
 		}
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		try {
-			return objectMapper.writeValueAsString(result);
-		} catch (Exception e) {
-			return "{}";
-		}
+		return result;
 	}
-
-
 }

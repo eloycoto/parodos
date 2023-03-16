@@ -18,6 +18,7 @@ package com.redhat.parodos.workflow.definition.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.redhat.parodos.workflow.task.parameter.WorkFlowTaskParameter;
@@ -55,8 +56,8 @@ public class WorkFlowDefinitionResponseDTO {
 
 	private Date modifyDate;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private List<WorkFlowTaskParameter> parameters;
+	// @JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Map<String, Map<String,String>> parameters;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<WorkDefinitionResponseDTO> works;
