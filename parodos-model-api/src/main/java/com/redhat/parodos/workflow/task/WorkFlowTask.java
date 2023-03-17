@@ -62,11 +62,14 @@ public interface WorkFlowTask extends Work {
 		HashMap<String, Map<String, String>> result = new HashMap<>();
 		taskParamsLoop:
 		for (WorkFlowTaskParameter workFlowTaskParameter : this.getWorkFlowTaskParameters()) {
+			if (workFlowTaskParameter == null) {
+				continue;
+			}
 			Map<String, String> properties = new HashMap<>(Map.ofEntries(
 					Map.entry("required", String.format("%s", !workFlowTaskParameter.isOptional())),
 					Map.entry("description", workFlowTaskParameter.getDescription())
 			));
-			workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
+			// workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
 
 			switch (workFlowTaskParameter.getType()) {
 				case PASSWORD:

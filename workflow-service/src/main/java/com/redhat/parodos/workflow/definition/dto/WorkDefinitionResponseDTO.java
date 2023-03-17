@@ -18,15 +18,22 @@ package com.redhat.parodos.workflow.definition.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.parodos.workflow.parameter.WorkFlowParameter;
 import com.redhat.parodos.workflow.task.enums.WorkFlowTaskOutput;
 import com.redhat.parodos.workflow.task.parameter.WorkFlowTaskParameter;
-import java.util.List;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.redhat.parodos.workflow.util.WorkFlowDTOUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationContextFactory;
 
 /**
  * Workflow task definition response dto
@@ -40,6 +47,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class WorkDefinitionResponseDTO {
 
 	private String id;
@@ -61,9 +69,24 @@ public class WorkDefinitionResponseDTO {
 	private List parameters;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Map<String, Map<String, String>> parametersB;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<WorkFlowTaskOutput> outputs;
 
 	@JsonIgnore
 	private Integer numberOfWorkUnits;
 
+	public  WorkDefinitionResponseDTO importParametersFromString(String parameters) {
+		if (parameters == null) {
+			return this;
+		}
+
+		this.parametersB = WorkFlowDTOUtil.readStringAsObject(
+				parameters,
+			   new TypeReference<Map<String, Map<String, String>>>() {},
+				Map.of());
+		log.error("Parameters: {}", this.parametersB);
+		return this;
+	}
 }
