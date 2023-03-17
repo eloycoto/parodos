@@ -77,6 +77,22 @@ public class WorkDefinitionResponseDTO {
 	@JsonIgnore
 	private Integer numberOfWorkUnits;
 
+	public static class WorkDefinitionResponseDTOBuilder {
+		public WorkDefinitionResponseDTOBuilder parameterFromString(String parameters) {
+			if (parameters == null) {
+				return this;
+			}
+
+			this.parametersB(WorkFlowDTOUtil.readStringAsObject(
+					parameters,
+					new TypeReference<Map<String, Map<String, String>>>() {},
+					Map.of()));
+//			log.error("Parameters: {}", this.parametersB);
+//			return this;
+			return this;
+		}
+	}
+
 	public  WorkDefinitionResponseDTO importParametersFromString(String parameters) {
 		if (parameters == null) {
 			return this;
