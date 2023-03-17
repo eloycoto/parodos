@@ -65,11 +65,11 @@ public class WorkDefinitionResponseDTO {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private List<WorkDefinitionResponseDTO> works;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private List parameters;
+//	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+//	private List parameters;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Map<String, Map<String, String>> parametersB;
+	private Map<String, Map<String, String>> parameters;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<WorkFlowTaskOutput> outputs;
@@ -82,7 +82,7 @@ public class WorkDefinitionResponseDTO {
 			if (parameters == null) {
 				return this;
 			}
-			this.parametersB(WorkFlowDTOUtil.readStringAsObject(
+			this.parameters(WorkFlowDTOUtil.readStringAsObject(
 					parameters,
 					new TypeReference<Map<String, Map<String, String>>>() {},
 					Map.of()));

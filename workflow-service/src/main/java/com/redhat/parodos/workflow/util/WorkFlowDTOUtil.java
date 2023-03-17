@@ -78,6 +78,11 @@ public class WorkFlowDTOUtil {
 		}
 		catch (JsonProcessingException e) {
 			log.error("Error occurred in object conversion: {}", e.getMessage());
+			log.error("Failed -->{}", Thread.currentThread().getStackTrace());
+			for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+				System.out.println(ste + "\n");
+			}
+
 		}
 		return defaultValue;
 	}

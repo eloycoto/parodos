@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * logging task execution
@@ -65,8 +66,21 @@ public class LoggingWorkFlowTask extends BaseInfrastructureWorkFlowTask {
 		return List.of(
 				WorkFlowTaskParameter.builder().key("api-server").description("The api server")
 						.type(WorkFlowTaskParameterType.URL).optional(false).build(),
-				WorkFlowTaskParameter.builder().key("user-id").description("The user id")
-						.type(WorkFlowTaskParameterType.TEXT).optional(false).build());
+				WorkFlowTaskParameter
+						.builder()
+						.key("user-id")
+						.description("The user id")
+						.type(WorkFlowTaskParameterType.TEXT)
+						.optional(false)
+						.build(),
+				WorkFlowTaskParameter
+						.builder()
+						.key("Priority")
+						.description("Priority for the user")
+						.type(WorkFlowTaskParameterType.TEXT)
+						.optional(false)
+						.JsonSchemaOptions(Map.of("minimum",  "1", "maximum", "5"))
+						.build());
 	}
 
 	@Override

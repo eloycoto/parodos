@@ -69,7 +69,10 @@ public interface WorkFlowTask extends Work {
 					Map.entry("required", String.format("%s", !workFlowTaskParameter.isOptional())),
 					Map.entry("description", workFlowTaskParameter.getDescription())
 			));
-			// workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
+
+			if (workFlowTaskParameter.getJsonSchemaOptions() != null) {
+				workFlowTaskParameter.getJsonSchemaOptions().forEach(properties::put);
+			}
 
 			switch (workFlowTaskParameter.getType()) {
 				case PASSWORD:

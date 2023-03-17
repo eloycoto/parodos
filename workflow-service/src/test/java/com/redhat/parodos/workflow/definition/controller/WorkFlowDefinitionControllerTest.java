@@ -129,7 +129,9 @@ class WorkFlowDefinitionControllerTest extends ControllerMockClient {
 
 	private WorkDefinitionResponseDTO createSampleWorkFlowTaskDefinition(String name) {
 		return WorkDefinitionResponseDTO.builder().id(UUID.randomUUID().toString()).name(name)
-				.parameters(List.of(WorkFlowTaskParameter.builder().key("param1").description("param1").build()))
+				// @TODO eloy check here how to do!
+//				.parameterFromString(Map.Of()
+//						(Map.of("param1", WorkFlowTaskParameter.builder().key("param1").description("param1").build()))
 				.build();
 	}
 
