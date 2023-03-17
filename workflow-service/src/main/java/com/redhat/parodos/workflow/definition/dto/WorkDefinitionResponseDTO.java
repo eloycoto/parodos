@@ -82,27 +82,11 @@ public class WorkDefinitionResponseDTO {
 			if (parameters == null) {
 				return this;
 			}
-
 			this.parametersB(WorkFlowDTOUtil.readStringAsObject(
 					parameters,
 					new TypeReference<Map<String, Map<String, String>>>() {},
 					Map.of()));
-//			log.error("Parameters: {}", this.parametersB);
-//			return this;
 			return this;
 		}
-	}
-
-	public  WorkDefinitionResponseDTO importParametersFromString(String parameters) {
-		if (parameters == null) {
-			return this;
-		}
-
-		this.parametersB = WorkFlowDTOUtil.readStringAsObject(
-				parameters,
-			   new TypeReference<Map<String, Map<String, String>>>() {},
-				Map.of());
-		log.error("Parameters: {}", this.parametersB);
-		return this;
 	}
 }

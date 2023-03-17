@@ -264,13 +264,13 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
 								.findById(wwdt1.getWorkDefinitionId()).get();
 						workDefinitionResponseDTOs.add(WorkDefinitionResponseDTO.builder().id(wdt1.getId().toString())
 								.workType(WorkType.TASK.name()).name(wdt1.getName())
-										.parameterFromString(wdt1.getParameters())
+								.parameterFromString(wdt1.getParameters())
 //								.parameters(
 //										WorkFlowDTOUtil.readStringAsObject(wdt1.getParameters(), new TypeReference<>() {
 //										}, List.of()))
 								.outputs(WorkFlowDTOUtil.readStringAsObject(wdt1.getOutputs(), new TypeReference<>() {
-								}, List.of())).build()
-								.importParametersFromString(wdt1.getParameters()));
+								}, List.of())).build());
+//								.importParametersFromString(wdt1.getParameters()));
 					}
 					else { // WorkFlow
 						WorkFlowDefinition wd1 = workFlowDefinitionRepository.findById(wwdt1.getWorkDefinitionId())
