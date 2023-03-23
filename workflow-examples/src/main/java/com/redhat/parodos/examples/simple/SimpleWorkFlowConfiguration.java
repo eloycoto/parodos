@@ -15,6 +15,7 @@
  */
 package com.redhat.parodos.examples.simple;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.parodos.examples.simple.task.LoggingWorkFlowTask;
 import com.redhat.parodos.examples.simple.task.RestAPIWorkFlowTask;
 import com.redhat.parodos.workflow.annotation.Infrastructure;
@@ -22,7 +23,16 @@ import com.redhat.parodos.workflow.consts.WorkFlowConstants;
 import com.redhat.parodos.workflows.workflow.ParallelFlow;
 import com.redhat.parodos.workflows.workflow.SequentialFlow;
 import com.redhat.parodos.workflows.workflow.WorkFlow;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +44,7 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
+@Slf4j
 public class SimpleWorkFlowConfiguration {
 
 	// START Sequential Example (WorkflowTasks and Workflow Definitions)
@@ -51,6 +62,7 @@ public class SimpleWorkFlowConfiguration {
 	@Infrastructure
 	WorkFlow simpleSequentialWorkFlowTask(@Qualifier("restCallTask") RestAPIWorkFlowTask restCallTask,
 			@Qualifier("loggingTask") LoggingWorkFlowTask loggingTask) {
+		log.error("Error --> {}", this.getVersion());
 		// @formatter:off
 		return SequentialFlow
 				.Builder.aNewSequentialFlow()
@@ -83,6 +95,8 @@ public class SimpleWorkFlowConfiguration {
 	WorkFlow simpleParallelWorkFlowTask(@Qualifier("simpleParallelTask1") LoggingWorkFlowTask simpleParallelTask1,
 			@Qualifier("simpleParallelTask2") LoggingWorkFlowTask simpleParallelTask2,
 			@Qualifier("simpleParallelTask3") LoggingWorkFlowTask simpleParallelTask3) {
+
+		log.error("Error --> {}", this.getVersion());
 		// @formatter:off
 		return ParallelFlow
 				.Builder.aNewParallelFlow()
@@ -93,5 +107,17 @@ public class SimpleWorkFlowConfiguration {
 		// @formatter:on
 	}
 	// END Parallel Example (WorkflowTasks and Workflow Definitions)
+
+	Optional<String> getVersion() {
+		ClassLoader classLoader = getClass().getClassLoader();
+		InputStream inputStream = classLoader.getResourceAsStream("git.properties");
+		try {
+			Map<String, Object> result = new ObjectMapper().readValue(inputStream, HashMap.class);
+			return Optional.of(result.get("git.commit.id").toString());
+		}
+		catch (Exception e) {
+			Optional.empty();
+		}
+	}
 
 }
