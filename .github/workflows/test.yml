@@ -7,7 +7,7 @@ on:
       - ActionsTest
       - 'releases/**'
 
-  pull_request_target:
+  pull_request:
     branches:
       - '**'
 permissions: read-all
@@ -16,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha != '' &&  github.event.pull_request.head.sha ||  github.sha }}
 
       - uses: actions/setup-java@v3
         with:
@@ -60,8 +58,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
-    permissions:
-      checks: read
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -103,10 +99,7 @@ jobs:
     needs:
       - build
     steps:
-
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha != '' &&  github.event.pull_request.head.sha ||  github.sha }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
