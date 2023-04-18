@@ -44,7 +44,7 @@ jobs:
         with:
           name: artifacts
           path: |
-            ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/jacoco.xml
+            ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/
             ${{ github.workspace }}/notification-service/target/*.jar
             ${{ github.workspace }}/workflow-service/target/*.jar
             ${{ github.workspace }}/workflow-examples/target/*.jar
@@ -70,7 +70,6 @@ jobs:
         with:
           coverage_results_path: ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/jacoco.xml
           coverage_report_name: Coverage
-          coverage_summary_path: ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/jacoco.md
           coverage_report_title: JaCoCo
           skip_check_run: true
           minimum_coverage: 50
