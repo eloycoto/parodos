@@ -84,6 +84,9 @@ jobs:
       - name: Add Coverage Job Summary
         run: echo "${{ steps.jacoco_reporter.outputs.coverageSummary }}"
 
+      - name: Add Coverage Job Summary
+        run: echo "ELOY RUNNING TEST HERE" >> $GITHUB_STEP_SUMMARY
+
       # Publish Coverage Job Summary  # Optional
       - name: Add Coverage Job Summary
         run: echo "${{ steps.jacoco_reporter.outputs.coverageSummary }}" >> $GITHUB_STEP_SUMMARY
