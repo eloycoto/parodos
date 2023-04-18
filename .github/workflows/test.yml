@@ -82,11 +82,26 @@ jobs:
           publish_only_summary: true
 
       - name: Add Coverage Job Summary
+        run: find ${{ github.workspace }}
+
+      - name: Add Coverage Job Summary
+        run: find ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/
+
+      - name: Add Coverage Job Summary
+        run: cat ${{ github.workspace }}/_TMP/coverage-summary.md >> $GITHUB_STEP_SUMMARY
+
+
+      - name: Add Coverage Job Summary
         run: echo "${{ steps.jacoco_reporter.outputs.coverageSummary }}"
 
       - name: Add Coverage Job Summary
         run: echo "ELOY RUNNING TEST HERE" >> $GITHUB_STEP_SUMMARY
 
+      - name: Add Coverage Job Summary
+        run: cat ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/jacoco.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage Job Summary
+        run: cat ${{ github.workspace }}/coverage/target/site/jacoco-aggregate/jacoco.md
       # Publish Coverage Job Summary  # Optional
       - name: Add Coverage Job Summary
         run: echo "${{ steps.jacoco_reporter.outputs.coverageSummary }}" >> $GITHUB_STEP_SUMMARY
