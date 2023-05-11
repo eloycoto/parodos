@@ -2,8 +2,8 @@ package com.redhat.parodos.examples.move2kube;
 
 import java.util.concurrent.Executors;
 
+import com.redhat.parodos.examples.move2kube.task.GitArchiveTask;
 import com.redhat.parodos.examples.move2kube.task.Move2KubeTask;
-import com.redhat.parodos.tasks.git.GitArchiveTask;
 import com.redhat.parodos.tasks.git.GitCloneTask;
 import com.redhat.parodos.workflow.annotation.Infrastructure;
 import com.redhat.parodos.workflow.consts.WorkFlowConstants;

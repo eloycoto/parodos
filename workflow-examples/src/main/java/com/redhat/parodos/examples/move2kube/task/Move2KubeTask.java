@@ -99,7 +99,7 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 		log.error("**********************************************");
 		log.error("**********************************************");
 		log.error("**********************************************");
-		return new DefaultWorkReport(WorkStatus.FAILED, workContext);
+		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
 	}
 
 	@Override
