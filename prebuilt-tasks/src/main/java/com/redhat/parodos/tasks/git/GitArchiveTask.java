@@ -36,9 +36,13 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 				.optional(true).description("path where the git repo is located").build());
 	}
 
+	public String getRepoPath(WorkContext workContext) {
+		return GitUtils.getRepoPath(workContext);
+	}
+
 	@Override
 	public WorkReport execute(WorkContext workContext) {
-		String path = GitUtils.getRepoPath(workContext);
+		String path = getRepoPath(workContext);
 		if (Strings.isNullOrEmpty(path)) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new IllegalArgumentException("The path parameter cannot be null or empty"));
@@ -73,12 +77,11 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 	}
 
 	private Repository getRepo(String path) throws IOException {
-		Path gitDir = Paths.get(path);
+		Path gitDir = Paths.get(path + "/.git");
 		return new FileRepositoryBuilder().setGitDir(gitDir.toFile()).build();
 	}
 
 	private Path archive(Repository repo) throws FileNotFoundException, IOException, GitAPIException {
-
 		// Create a Git instance
 		Git git = new Git(repo);
 		ArchiveCommand.registerFormat("zip", new ZipFormat());

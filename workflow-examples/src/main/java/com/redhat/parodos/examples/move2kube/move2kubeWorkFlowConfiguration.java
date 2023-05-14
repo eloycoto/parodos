@@ -3,7 +3,9 @@ package com.redhat.parodos.examples.move2kube;
 import java.util.concurrent.Executors;
 
 import com.redhat.parodos.examples.move2kube.task.GitArchiveTask;
+import com.redhat.parodos.examples.move2kube.task.Move2KubePlan;
 import com.redhat.parodos.examples.move2kube.task.Move2KubeTask;
+import com.redhat.parodos.examples.move2kube.task.Move2KubeTransform;
 import com.redhat.parodos.tasks.git.GitCloneTask;
 import com.redhat.parodos.workflow.annotation.Infrastructure;
 import com.redhat.parodos.workflow.consts.WorkFlowConstants;
@@ -34,6 +36,16 @@ public class move2kubeWorkFlowConfiguration {
 		return move2KubeTask;
 	}
 
+	@Bean
+	Move2KubeTransform move2KubeTransform() {
+		return new Move2KubeTransform();
+	}
+
+	@Bean
+	Move2KubePlan move2KubePlan() {
+		return new Move2KubePlan();
+	}
+
 	@Bean(name = "move2KubeProject")
 	@Infrastructure
 	WorkFlow move2KubeProject(@Qualifier("move2KubeTask") Move2KubeTask move2KubeTask) {
@@ -48,13 +60,33 @@ public class move2kubeWorkFlowConfiguration {
 				.then(gitArchiveTask).build();
 	}
 
+	@Bean(name = "preparationWorkflow")
+	@Infrastructure
+	WorkFlow preparationWorkflow(@Qualifier("getSources") WorkFlow getSources,
+			@Qualifier("move2KubeProject") WorkFlow move2KubeProject) {
+		return ParallelFlow.Builder.aNewParallelFlow().named("preparationWorkflow")
+				.execute(move2KubeProject, getSources).with(Executors.newFixedThreadPool(2)).build();
+	}
+
+	// @Bean(name = "move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
+	// @Infrastructure
+	// WorkFlow move2kubeWorkflow(@Qualifier("getSources") WorkFlow getSources,
+	// @Qualifier("move2KubeProject") WorkFlow move2KubeProject) {
+	// return ParallelFlow.Builder.aNewParallelFlow()
+	// .named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
+	// .execute(move2KubeProject,
+	// getSources).with(Executors.newFixedThreadPool(2)).build();
+	// }
+
 	@Bean(name = "move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
 	@Infrastructure
-	WorkFlow move2kubeWorkflow(@Qualifier("getSources") WorkFlow getSources,
-			@Qualifier("move2KubeProject") WorkFlow move2KubeProject) {
-		return ParallelFlow.Builder.aNewParallelFlow()
-				.named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
-				.execute(move2KubeProject, getSources).with(Executors.newFixedThreadPool(2)).build();
+	WorkFlow move2kubeWorkflow(@Qualifier("preparationWorkflow") WorkFlow preparationWorkflow,
+			@Qualifier("move2KubePlan") Move2KubePlan move2KubePlan,
+			@Qualifier("move2KubeTransform") Move2KubeTransform move2KubeTransform) {
+		return SequentialFlow.Builder.aNewSequentialFlow()
+				// return ParallelFlow.Builder.aNewParallelFlow()
+				.named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW).execute(preparationWorkflow)
+				.then(move2KubePlan).then(move2KubeTransform).build();
 	}
 
 }
