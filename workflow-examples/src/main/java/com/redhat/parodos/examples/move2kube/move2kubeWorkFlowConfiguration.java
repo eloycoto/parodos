@@ -38,12 +38,13 @@ public class move2kubeWorkFlowConfiguration {
 
 	@Bean
 	Move2KubeTransform move2KubeTransform() {
-		return new Move2KubeTransform();
+		Move2KubeTransform move2KubeTransform = new Move2KubeTransform("http://localhost:8081/api/v1");
+		return move2KubeTransform;
 	}
 
 	@Bean
 	Move2KubePlan move2KubePlan() {
-		return new Move2KubePlan();
+		return new Move2KubePlan("http://localhost:8081/api/v1");
 	}
 
 	@Bean(name = "move2KubeProject")

@@ -18,10 +18,6 @@ public class GitArchiveTask extends com.redhat.parodos.tasks.git.GitArchiveTask 
 	// @Override
 	public String getRepoPath(WorkContext workContext) {
 		// comes from GitClonePrebuiltTask
-		log.error("Fix fix ifx {}", workContext.get("gitDestination").toString());
-		log.error("Fix fix ifx {}", workContext.get("gitDestination").toString());
-		log.error("Fix fix ifx {}", workContext.get("gitDestination").toString());
-		log.error("Fix fix ifx {}", workContext.get("gitDestination").toString());
 		return workContext.get("gitDestination").toString();
 	}
 

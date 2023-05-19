@@ -5,40 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// 
-// @Slf4j
-// public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
-// 
-// // private ApiClient apiClient;
-// //
-// // private WorkspacesApi workspace;
-// 
-// // public Move2KubeTask() {
-// // super();
-// // // this.apiClient = new ApiClient();
-// // // this.apiClient.setBasePath("http://localhost:8080/api/v1");
-// // // this.workspace = new WorkspacesApi(this.apiClient);
-// // }
-// 
-// // @Override
-// // public List<WorkParameter> getWorkFlowTaskParameters() {
-// // return List
-// // .of(WorkParameter.builder().key("Workspace").description("The workspace to be used
-// // in transformation")
-// // .optional(false).type(WorkParameterType.TEXT).build());
-// // }
-// 
-// @Override
-// public List<WorkFlowTaskOutput> getWorkFlowTaskOutputs() {
-// return List.of(WorkFlowTaskOutput.HTTP2XX, WorkFlowTaskOutput.OTHER);
-// }
-// 
-// @Override
-// public WorkReport execute(WorkContext workContext) {
-// return new DefaultWorkReport(WorkStatus.FAILED, workContext);
-// }
-// 
-// }
 import com.redhat.parodos.workflow.task.enums.WorkFlowTaskOutput;
 import com.redhat.parodos.workflow.task.infrastructure.BaseInfrastructureWorkFlowTask;
 import com.redhat.parodos.workflows.work.DefaultWorkReport;
@@ -89,16 +55,8 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 		catch (ApiException e) {
 			log.error("Cannot get the workspace, error: {}", e.getMessage());
 		}
-		log.error("WorkspaceID -->{}", workspaceID);
-		log.error("Context --> {}", workContext);
-
-		log.error("-----------------------------------------------------------");
-		log.error("-----------------------------------------------------------");
-		log.error("-----------------------------------------------------------");
-		setProject(workspaceID, workspaceInputs, UUID.randomUUID().toString());
-		log.error("**********************************************");
-		log.error("**********************************************");
-		log.error("**********************************************");
+		String projectId = setProject(workspaceID, workspaceInputs, UUID.randomUUID().toString());
+		workContext.put("move2KubeProjectID", projectId);
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
 	}
 
@@ -112,22 +70,23 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 		return workspace.getWorkspaces().stream().findFirst();
 	}
 
-	private void setProject(String workspaceId, Map<String, ProjectInputsValue> inputs, String workflowId) {
+	private String setProject(String workspaceId, Map<String, ProjectInputsValue> inputs, String workflowId) {
 		ProjectsApi projectsApi = new ProjectsApi(client);
 		Project project = new Project();
 		project.setName("WorkFlowID: " + workflowId);
 		project.description("Project for workflow: " + workflowId);
+
 		try {
 			CreateProject201Response res = projectsApi.createProject(workspaceId, project);
 			log.error("Setting the id as :{}", res.getId());
 			project.setId(res.getId());
 		}
-
 		catch (Exception e) {
-			return;
+			return "";
 		}
+
 		if (inputs == null) {
-			return;
+			return project.getId();
 		}
 
 		ApiClient clientFormData = client;
@@ -143,6 +102,7 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 				log.error("Error creating project input: {}", e.getMessage());
 			}
 		});
+		return project.getId();
 	}
 
 }
