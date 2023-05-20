@@ -2,6 +2,7 @@ package com.redhat.parodos.examples.move2kube;
 
 import java.util.concurrent.Executors;
 
+import com.redhat.parodos.examples.move2kube.checker.TransformChecker;
 import com.redhat.parodos.examples.move2kube.task.GitArchiveTask;
 import com.redhat.parodos.examples.move2kube.task.Move2KubePlan;
 import com.redhat.parodos.examples.move2kube.task.Move2KubeTask;
@@ -37,6 +38,22 @@ public class move2kubeWorkFlowConfiguration {
 	}
 
 	@Bean
+	TransformChecker transformChecker() {
+		TransformChecker transformChecker = new TransformChecker();
+		return transformChecker;
+	}
+
+	// @Bean(name = "transformWorkFlowChecker")
+	// @Checker(cronExpression = "*/5 * * * * ?")
+	// WorkFlow transformWorkFlowChecker(@Qualifier("transformChecker") TransformChecker
+	// transformChecker) {
+	// return
+	// SequentialFlow.Builder.aNewSequentialFlow().named("transformWorkFlowChecker").execute(transformChecker)
+	// .build();
+	// }
+	// transformworkflowchecker
+
+	@Bean
 	Move2KubeTransform move2KubeTransform() {
 		Move2KubeTransform move2KubeTransform = new Move2KubeTransform("http://localhost:8081/api/v1");
 		return move2KubeTransform;
@@ -69,25 +86,23 @@ public class move2kubeWorkFlowConfiguration {
 				.execute(move2KubeProject, getSources).with(Executors.newFixedThreadPool(2)).build();
 	}
 
-	// @Bean(name = "move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
-	// @Infrastructure
-	// WorkFlow move2kubeWorkflow(@Qualifier("getSources") WorkFlow getSources,
-	// @Qualifier("move2KubeProject") WorkFlow move2KubeProject) {
-	// return ParallelFlow.Builder.aNewParallelFlow()
-	// .named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
-	// .execute(move2KubeProject,
-	// getSources).with(Executors.newFixedThreadPool(2)).build();
-	// }
+	@Bean(name = "transformWorkFlowChecker")
+	@Infrastructure
+	WorkFlow transformWorkFlowChecker(@Qualifier("transformChecker") TransformChecker transformChecker) {
+		return SequentialFlow.Builder.aNewSequentialFlow().named("transformWorkFlowChecker").execute(transformChecker)
+				.build();
+	}
 
 	@Bean(name = "move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW)
 	@Infrastructure
 	WorkFlow move2kubeWorkflow(@Qualifier("preparationWorkflow") WorkFlow preparationWorkflow,
 			@Qualifier("move2KubePlan") Move2KubePlan move2KubePlan,
-			@Qualifier("move2KubeTransform") Move2KubeTransform move2KubeTransform) {
+			@Qualifier("move2KubeTransform") Move2KubeTransform move2KubeTransform,
+			@Qualifier("transformWorkFlowChecker") WorkFlow transformWorkFlowChecker) {
 		return SequentialFlow.Builder.aNewSequentialFlow()
 				// return ParallelFlow.Builder.aNewParallelFlow()
 				.named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW).execute(preparationWorkflow)
-				.then(move2KubePlan).then(move2KubeTransform).build();
+				.then(move2KubePlan).then(move2KubeTransform).then(transformWorkFlowChecker).build();
 	}
 
 }

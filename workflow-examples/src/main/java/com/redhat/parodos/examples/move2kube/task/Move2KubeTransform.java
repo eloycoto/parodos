@@ -1,7 +1,11 @@
 package com.redhat.parodos.examples.move2kube.task;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
+import com.redhat.parodos.examples.ocponboarding.task.dto.notification.NotificationRequest;
+import com.redhat.parodos.examples.utils.RestUtils;
 import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.DefaultWorkReport;
 import com.redhat.parodos.workflows.work.WorkContext;
@@ -14,6 +18,9 @@ import dev.parodos.move2kube.client.model.GetPlan200Response;
 import dev.parodos.move2kube.client.model.StartTransformation202Response;
 import dev.parodos.move2kube.client.model.StartTransformationRequest;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 
 @Slf4j
 public class Move2KubeTransform extends Move2KubeBase {
@@ -50,19 +57,30 @@ public class Move2KubeTransform extends Move2KubeBase {
 		}
 
 		String userID = String.valueOf(WorkContextUtils.getUserId(workContext));
-		sendNotification(userID, workspaceID, projectID);
+		if (!sendNotification(userID, workspaceID, projectID)) {
+			log.error("Cannot notify user about the transformation status");
+			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+					new RuntimeException("Cannot notify user about the transformation status"));
+		}
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
 	}
 
-	private void sendNotification(String userID, String workspaceID, String projectID) {
-		final StringBuilder url = new StringBuilder();
-		url.append(getBasePath());
-		url.append("workspaces/");
-		url.append(workspaceID);
-		url.append("/projects/");
-		url.append(projectID);
+	private boolean sendNotification(String userID, String workspaceID, String projectID) {
+		URI baseURI = URI.create(this.client.getBasePath());
+		URI projectURI = baseURI.resolve(String.format("workspaces/%s/projects/%s", workspaceID, projectID));
+		String url = projectURI.toString();
+		String message = String
+				.format("You need to complete some information for your transformation in the following url %s", url);
 
-		log.error("URL --->", url.toString());
+		NotificationRequest request = NotificationRequest.builder().usernames(List.of(userID))
+				.subject("Complete the transformation steps").body(message).build();
+
+		HttpEntity<NotificationRequest> notificationRequestHttpEntity = RestUtils.getRequestWithHeaders(request, "test",
+				"test");
+
+		ResponseEntity<String> response = RestUtils.executePost("http://localhost:8081/api/v1/messages",
+				notificationRequestHttpEntity);
+		return response.getStatusCode().is2xxSuccessful();
 	}
 
 	private String transform(String workspaceID, String projectID)
