@@ -11,6 +11,8 @@ import dev.parodos.move2kube.ApiException;
 import dev.parodos.move2kube.api.PlanApi;
 import dev.parodos.move2kube.api.ProjectOutputsApi;
 import dev.parodos.move2kube.client.model.GetPlan200Response;
+import dev.parodos.move2kube.client.model.StartTransformation202Response;
+import dev.parodos.move2kube.client.model.StartTransformationRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -66,15 +68,12 @@ public class Move2KubeTransform extends Move2KubeBase {
 	private String transform(String workspaceID, String projectID)
 			throws IllegalArgumentException, ApiException, IOException {
 		ProjectOutputsApi outputs = new ProjectOutputsApi(client);
-		log.error("plan is -->{}", plan);
-		return null;
-		// StartTransformation202Response response =
-		// outputs.startTransformation(workspaceID, projectID,
-		// StartTransformationRequest.fromJson(plan));
-		// if (response == null) {
-		// throw new IllegalArgumentException("Cannot start transformation");
-		// }
-		// return response.getId();
+		StartTransformation202Response response = outputs.startTransformation(workspaceID, projectID,
+				StartTransformationRequest.fromJson(plan));
+		if (response == null) {
+			throw new IllegalArgumentException("Cannot start transformation");
+		}
+		return response.getId();
 	}
 
 	private boolean isPlanCreated(String workspaceID, String projectID) {
