@@ -60,10 +60,12 @@ public class GitBranchTask extends BaseWorkFlowTask {
 			git.branchCreate().setName(branchName).call();
 		}
 		catch (IOException e) {
+			log.error("IOException {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("No repository at " + path + " Error:" + e.getMessage()));
 		}
 		catch (Exception e) {
+			log.error("Exception {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("Cannot create the branch on the repository:" + e));
 		}
