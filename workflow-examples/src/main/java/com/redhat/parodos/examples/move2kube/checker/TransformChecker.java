@@ -55,16 +55,16 @@ public class TransformChecker extends BaseWorkFlowCheckerTask {
 			ProjectOutputsValue output = Objects.requireNonNull(res.getOutputs()).get(transformID);
 			if (output == null) {
 				log.error("Failing in the project output!");
-				return new DefaultWorkReport(WorkStatus.PENDING, workContext,
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 						new IllegalArgumentException("Cannot get the project transformation output from the list"));
 			}
 			log.error("Failing in the project output is --->{}!", output.getStatus());
 			if (!Objects.equals(output.getStatus(), "done")) {
-				return new DefaultWorkReport(WorkStatus.PENDING, workContext);
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext);
 			}
 		}
 		catch (ApiException e) {
-			return new DefaultWorkReport(WorkStatus.COMPLETED, workContext, new IllegalArgumentException(
+			return new DefaultWorkReport(WorkStatus.FAILED, workContext, new IllegalArgumentException(
 					"Cannot get current project for the workflow, error:" + e.getMessage()));
 		}
 		catch (Exception e) {
