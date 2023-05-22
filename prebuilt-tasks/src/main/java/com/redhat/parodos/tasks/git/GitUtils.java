@@ -13,6 +13,12 @@ public abstract class GitUtils {
 	static final String gitRepoPath = "path";
 
 	@Getter
+	static final String gitBranch = "branch";
+
+	@Getter
+	static final String gitCommitMessage = "commitMessage";
+
+	@Getter
 	static final String uri = "uri";
 
 	@Getter

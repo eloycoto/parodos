@@ -39,7 +39,7 @@ public class move2kubeWorkFlowConfiguration {
 
 	@Bean
 	TransformChecker transformChecker() {
-		TransformChecker transformChecker = new TransformChecker();
+		TransformChecker transformChecker = new TransformChecker("http://localhost:8081/api/v1");
 		return transformChecker;
 	}
 

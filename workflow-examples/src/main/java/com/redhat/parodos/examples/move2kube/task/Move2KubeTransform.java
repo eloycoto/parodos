@@ -72,13 +72,14 @@ public class Move2KubeTransform extends Move2KubeBase {
 		String message = String
 				.format("You need to complete some information for your transformation in the following url %s", url);
 
-		NotificationRequest request = NotificationRequest.builder().usernames(List.of(userID))
+		// @TODO userID is the ID, but we need the username, so hardcode it here for now.
+		NotificationRequest request = NotificationRequest.builder().usernames(List.of("test"))
 				.subject("Complete the transformation steps").body(message).build();
 
 		HttpEntity<NotificationRequest> notificationRequestHttpEntity = RestUtils.getRequestWithHeaders(request, "test",
 				"test");
 
-		ResponseEntity<String> response = RestUtils.executePost("http://localhost:8081/api/v1/messages",
+		ResponseEntity<String> response = RestUtils.executePost("http://localhost:8082/api/v1/messages",
 				notificationRequestHttpEntity);
 		return response.getStatusCode().is2xxSuccessful();
 	}
