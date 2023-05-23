@@ -41,6 +41,8 @@ public class GitBranchTask extends BaseWorkFlowTask {
 
 	@Override
 	public WorkReport execute(WorkContext workContext) {
+		log.error("-------------------------------->Phase1");
+		log.error("WorkContext -->{}", workContext);
 		String branchName = null;
 		try {
 			branchName = this.getRequiredParameterValue(workContext, GitUtils.getBranch());
@@ -48,7 +50,10 @@ public class GitBranchTask extends BaseWorkFlowTask {
 		catch (MissingParameterException e) {
 			log.debug("Something failed with the parameters: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
+		}catch (Exception e) {
+			log.error("Execpetion here -->{} {}",e.getMessage(), e);
 		}
+		log.error("-------------------------------->Phase2", branchName);
 		String path = getRepoPath(workContext);
 		if (Strings.isNullOrEmpty(path)) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
