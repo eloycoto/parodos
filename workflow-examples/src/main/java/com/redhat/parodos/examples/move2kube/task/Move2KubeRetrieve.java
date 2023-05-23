@@ -47,8 +47,10 @@ public class Move2KubeRetrieve extends Move2KubeBase {
 		try {
 			Path finalPath = Files.newDirectoryStream(Paths.get(tempDir.toString() + "/output/")).iterator().next();
 			log.info("FinalPath is --->{} and GitPath is {}", finalPath, sourcePath);
-			FileUtils.copyDirectory(finalPath.resolve(Paths.get("deploy")).toFile(), Paths.get(sourcePath).toFile());
-			FileUtils.copyDirectory(finalPath.resolve(Paths.get("scripts")).toFile(), Paths.get(sourcePath).toFile());
+			FileUtils.copyDirectory(finalPath.resolve(Paths.get("deploy")).toFile(),
+					Paths.get(sourcePath).resolve("deploy").toFile());
+			FileUtils.copyDirectory(finalPath.resolve(Paths.get("scripts")).toFile(),
+					Paths.get(sourcePath).resolve("scripts").toFile());
 		}
 		catch (Exception e) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);

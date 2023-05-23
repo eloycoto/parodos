@@ -1,7 +1,6 @@
 package com.redhat.parodos.examples.move2kube.task;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 
 import com.redhat.parodos.examples.ocponboarding.task.dto.notification.NotificationRequest;
@@ -66,9 +65,12 @@ public class Move2KubeTransform extends Move2KubeBase {
 	}
 
 	private boolean sendNotification(String userID, String workspaceID, String projectID) {
-		URI baseURI = URI.create(this.client.getBasePath());
-		URI projectURI = baseURI.resolve(String.format("workspaces/%s/projects/%s", workspaceID, projectID));
-		String url = projectURI.toString();
+
+		// URI baseURI = URI.create(this.client.getBasePath());
+		// URI projectURI = baseURI.resolve(String.format("workspaces/%s/projects/%s",
+		// workspaceID, projectID));
+		// String url = projectURI.toString();
+		String url = String.format("http://localhost:8081/workspaces/%s/projects/%s", workspaceID, projectID);
 		String message = String
 				.format("You need to complete some information for your transformation in the following url %s", url);
 

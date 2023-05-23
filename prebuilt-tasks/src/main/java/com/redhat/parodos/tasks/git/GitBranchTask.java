@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
@@ -30,7 +31,7 @@ public class GitBranchTask extends BaseWorkFlowTask {
 		return List.of(
 				WorkParameter.builder().key(GitUtils.getGitRepoPath()).type(WorkParameterType.TEXT).optional(true)
 						.description("path where the git repo is located").build(),
-				WorkParameter.builder().key(GitUtils.getGitBranch()).type(WorkParameterType.TEXT).optional(false)
+				WorkParameter.builder().key(GitUtils.getBranch()).type(WorkParameterType.TEXT).optional(false)
 						.description("branch whichs need to be created").build());
 	}
 
@@ -42,13 +43,12 @@ public class GitBranchTask extends BaseWorkFlowTask {
 	public WorkReport execute(WorkContext workContext) {
 		String branchName = null;
 		try {
-			branchName = this.getRequiredParameterValue(workContext, GitUtils.getGitBranch());
+			branchName = this.getRequiredParameterValue(workContext, GitUtils.getBranch());
 		}
 		catch (MissingParameterException e) {
 			log.debug("Something failed with the parameters: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
 		}
-
 		String path = getRepoPath(workContext);
 		if (Strings.isNullOrEmpty(path)) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
@@ -57,7 +57,13 @@ public class GitBranchTask extends BaseWorkFlowTask {
 
 		try (Repository repo = getRepo(path)) {
 			Git git = new Git(repo);
+			Ref branchRef = repo.findRef(branchName);
+			if (branchRef != null) {
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+						new IllegalArgumentException("Branch '" + branchName + "' is already created"));
+			}
 			git.branchCreate().setName(branchName).call();
+			git.checkout().setName(branchName).call();
 		}
 		catch (IOException e) {
 			log.error("IOException {}", e.getMessage());
