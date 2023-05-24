@@ -45,7 +45,6 @@ public class GitCommitTask extends BaseWorkFlowTask {
 			commitMessage = this.getRequiredParameterValue(workContext, GitUtils.getGitCommitMessage());
 		}
 		catch (MissingParameterException e) {
-			log.error("Something failed with the parameters: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
 		}
 
@@ -56,22 +55,19 @@ public class GitCommitTask extends BaseWorkFlowTask {
 		}
 
 		try (Repository repo = getRepo(path)) {
-			log.error("Phase1");
 			Git git = new Git(repo);
-			log.error("Phase2");
 			git.add().addFilepattern(".").call();
-			log.error("Phase3");
 			git.commit().setSign(false).setMessage(commitMessage).call();
 		}
 		catch (IOException e) {
 			log.error("IOException!{}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("No repository at " + path + " Error:" + e.getMessage()));
+					new Exception("No repository at '%s' error: %s".formatted(path, e.getMessage())));
 		}
 		catch (Exception e) {
 			log.error("Exception!{}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("Cannot create the branch on the repository:" + e));
+					new Exception("Cannot create the branch on the repository: %s".formatted(e)));
 		}
 
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext, null);
