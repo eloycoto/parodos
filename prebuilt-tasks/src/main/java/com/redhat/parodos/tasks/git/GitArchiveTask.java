@@ -55,13 +55,13 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 		}
 		catch (FileNotFoundException | GitAPIException e) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("Cannot archive the repository:" + e));
+					new Exception("Cannot archive the repository: %s".formatted(e.getMessage())));
 		}
 		catch (IOException e) {
 			// This is the catch for Repository clone call or archive, we don't really
 			// know.
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("No repository at " + path + " Error:" + e.getMessage()));
+					new Exception("No repository at '%s' Error: %s".formatted(path, e.getMessage())));
 		}
 		catch (Exception e) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,

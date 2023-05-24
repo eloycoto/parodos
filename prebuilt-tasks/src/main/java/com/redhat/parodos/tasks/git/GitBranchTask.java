@@ -41,8 +41,6 @@ public class GitBranchTask extends BaseWorkFlowTask {
 
 	@Override
 	public WorkReport execute(WorkContext workContext) {
-		log.error("-------------------------------->Phase1");
-		log.error("WorkContext -->{}", workContext);
 		String branchName = null;
 		try {
 			branchName = this.getRequiredParameterValue(workContext, GitUtils.getBranch());
@@ -62,18 +60,18 @@ public class GitBranchTask extends BaseWorkFlowTask {
 			Ref branchRef = repo.findRef(branchName);
 			if (branchRef != null) {
 				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-						new IllegalArgumentException("Branch '" + branchName + "' is already created"));
+						new IllegalArgumentException("Branch '%s' is already created".formatted(branchName)));
 			}
 			git.branchCreate().setName(branchName).call();
 			git.checkout().setName(branchName).call();
 		}
 		catch (IOException e) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("No repository at " + path + " Error:" + e.getMessage()));
+					new Exception("No repository at '%s' error: %s".formatted(path, e.getMessage())));
 		}
 		catch (Exception e) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("Cannot create the branch on the repository:" + e));
+					new Exception("Cannot create the branch on the repository: %s".formatted(e.getMessage())));
 		}
 
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext, null);
