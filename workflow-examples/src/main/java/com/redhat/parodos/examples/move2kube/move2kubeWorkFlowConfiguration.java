@@ -52,20 +52,17 @@ public class move2kubeWorkFlowConfiguration {
 
 	@Bean
 	Move2KubeTask move2KubeTask() {
-		Move2KubeTask move2KubeTask = new Move2KubeTask(getMove2KubeAPIEndpoint());
-		return move2KubeTask;
+		return new Move2KubeTask(getMove2KubeAPIEndpoint());
 	}
 
 	@Bean
 	Move2KubeRetrieve move2KubeRetrieve() {
-		Move2KubeRetrieve move2KubeRetrieve = new Move2KubeRetrieve(getMove2KubeAPIEndpoint());
-		return move2KubeRetrieve;
+		return new Move2KubeRetrieve(getMove2KubeAPIEndpoint());
 	}
 
 	@Bean
 	TransformChecker transformChecker() {
-		TransformChecker transformChecker = new TransformChecker(getMove2KubeAPIEndpoint());
-		return transformChecker;
+		return new TransformChecker(getMove2KubeAPIEndpoint());
 	}
 
 	@Bean(name = "transformWorkFlowChecker")
