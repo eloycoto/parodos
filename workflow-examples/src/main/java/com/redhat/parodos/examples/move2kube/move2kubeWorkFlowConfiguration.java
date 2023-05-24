@@ -46,27 +46,30 @@ public class move2kubeWorkFlowConfiguration {
 		return new GitBranchTask();
 	}
 
+	private String getMove2KubeAPIEndpoint() {
+		return "http://localhost:8081/api/v1";
+	}
+
 	@Bean
 	Move2KubeTask move2KubeTask() {
-		Move2KubeTask move2KubeTask = new Move2KubeTask("http://localhost:8081/api/v1");
+		Move2KubeTask move2KubeTask = new Move2KubeTask(getMove2KubeAPIEndpoint());
 		return move2KubeTask;
 	}
 
 	@Bean
 	Move2KubeRetrieve move2KubeRetrieve() {
-		Move2KubeRetrieve move2KubeRetrieve = new Move2KubeRetrieve("http://localhost:8081/api/v1");
+		Move2KubeRetrieve move2KubeRetrieve = new Move2KubeRetrieve(getMove2KubeAPIEndpoint());
 		return move2KubeRetrieve;
 	}
 
 	@Bean
 	TransformChecker transformChecker() {
-		TransformChecker transformChecker = new TransformChecker("http://localhost:8081/api/v1");
+		TransformChecker transformChecker = new TransformChecker(getMove2KubeAPIEndpoint());
 		return transformChecker;
 	}
 
 	@Bean(name = "transformWorkFlowChecker")
 	@Checker(cronExpression = "*/5 * * * * ?")
-	// @Infrastructure
 	WorkFlow transformWorkFlowChecker(@Qualifier("transformChecker") TransformChecker transformChecker) {
 		return SequentialFlow.Builder.aNewSequentialFlow().named("transformWorkFlowChecker").execute(transformChecker)
 				.build();
@@ -74,14 +77,14 @@ public class move2kubeWorkFlowConfiguration {
 
 	@Bean
 	Move2KubeTransform move2KubeTransform(@Qualifier("transformWorkFlowChecker") WorkFlow transformWorkFlowChecker) {
-		Move2KubeTransform move2KubeTransform = new Move2KubeTransform("http://localhost:8081/api/v1");
+		Move2KubeTransform move2KubeTransform = new Move2KubeTransform(getMove2KubeAPIEndpoint());
 		move2KubeTransform.setWorkFlowCheckers(Arrays.asList(transformWorkFlowChecker));
 		return move2KubeTransform;
 	}
 
 	@Bean
 	Move2KubePlan move2KubePlan() {
-		return new Move2KubePlan("http://localhost:8081/api/v1");
+		return new Move2KubePlan(getMove2KubeAPIEndpoint());
 	}
 
 	@Bean(name = "move2KubeProject")
@@ -115,7 +118,6 @@ public class move2kubeWorkFlowConfiguration {
 			@Qualifier("move2KubeRetrieve") Move2KubeRetrieve move2KubeRetrieve,
 			@Qualifier("gitCommitTask") GitCommitTask gitCommitTask) {
 		return SequentialFlow.Builder.aNewSequentialFlow()
-				// return ParallelFlow.Builder.aNewParallelFlow()
 				.named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW).execute(preparationWorkflow)
 				.then(move2KubePlan).then(move2KubeTransform).then(gitBranchTask).then(move2KubeRetrieve)
 				.then(gitCommitTask).build();
