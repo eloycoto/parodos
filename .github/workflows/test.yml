@@ -6,6 +6,7 @@ on:
       - main
       - ActionsTest
       - 'releases/**'
+      - Move2KubeExample
 
   pull_request:
     branches:
