@@ -1,5 +1,6 @@
 package com.redhat.parodos.tasks.git;
 
+import com.redhat.parodos.workflow.exception.MissingParameterException;
 import com.redhat.parodos.workflow.task.BaseWorkFlowTask;
 import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.WorkContext;
@@ -92,13 +93,58 @@ class GitBranchTaskTest {
         WorkContext workContext = new WorkContext();
         workContext.put("path", tempDir.toString());
         WorkContextUtils.addParameter(workContext, "branch", "master");
-        WorkContextUtils.addParameter(workContext, "path", tempDir.toString());
 
         // when
         var result = this.gitBranchTask.execute(workContext);
 
         // then
         assertNotNull(result.getError());
+        assertEquals(result.getStatus(), WorkStatus.FAILED);
+    }
+
+    @Test
+    public void testWitMissingParams() {
+        // given
+        WorkContext workContext = new WorkContext();
+
+        // when
+        var result = this.gitBranchTask.execute(workContext);
+
+        // then
+        assertNotNull(result.getError());
+        assertEquals(result.getStatus(), WorkStatus.FAILED);
+        assertThat(result.getError()).isInstanceOf(MissingParameterException.class);
+    }
+
+
+    @Test
+    public void testWithNoPath() {
+        // given
+        WorkContext workContext = new WorkContext();
+        WorkContextUtils.addParameter(workContext, "branch", "master");
+
+        // when
+        var result = this.gitBranchTask.execute(workContext);
+
+        // then
+        assertNotNull(result.getError());
+        assertEquals(result.getStatus(), WorkStatus.FAILED);
+        assertThat(result.getError()).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void testWithInvalidPath() {
+        // given
+        WorkContext workContext = new WorkContext();
+        workContext.put("path", "/tmp/failingone");
+        WorkContextUtils.addParameter(workContext, "branch", "master");
+
+        // when
+        var result = this.gitBranchTask.execute(workContext);
+
+        // then
+        assertNotNull(result.getError());
+        assertThat(result.getError().toString()).contains("RefNotFoundException");
         assertEquals(result.getStatus(), WorkStatus.FAILED);
     }
 

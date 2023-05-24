@@ -48,12 +48,9 @@ public class GitBranchTask extends BaseWorkFlowTask {
 			branchName = this.getRequiredParameterValue(workContext, GitUtils.getBranch());
 		}
 		catch (MissingParameterException e) {
-			log.debug("Something failed with the parameters: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
-		}catch (Exception e) {
-			log.error("Execpetion here -->{} {}",e.getMessage(), e);
 		}
-		log.error("-------------------------------->Phase2", branchName);
+
 		String path = getRepoPath(workContext);
 		if (Strings.isNullOrEmpty(path)) {
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
@@ -71,12 +68,10 @@ public class GitBranchTask extends BaseWorkFlowTask {
 			git.checkout().setName(branchName).call();
 		}
 		catch (IOException e) {
-			log.error("IOException {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("No repository at " + path + " Error:" + e.getMessage()));
 		}
 		catch (Exception e) {
-			log.error("Exception {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("Cannot create the branch on the repository:" + e));
 		}
