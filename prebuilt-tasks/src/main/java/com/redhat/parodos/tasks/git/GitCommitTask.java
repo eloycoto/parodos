@@ -61,7 +61,7 @@ public class GitCommitTask extends BaseWorkFlowTask {
 			log.error("Phase2");
 			git.add().addFilepattern(".").call();
 			log.error("Phase3");
-			git.commit().setMessage(commitMessage).call();
+			git.commit().setSign(false).setMessage(commitMessage).call();
 		}
 		catch (IOException e) {
 			log.error("IOException!{}", e.getMessage());
