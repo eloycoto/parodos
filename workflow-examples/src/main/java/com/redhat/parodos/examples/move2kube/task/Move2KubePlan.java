@@ -15,11 +15,8 @@ import dev.parodos.move2kube.api.ProjectInputsApi;
 import dev.parodos.move2kube.client.model.GetPlan200Response;
 import lombok.extern.slf4j.Slf4j;
 
-import static java.lang.Thread.*;
+import static java.lang.Thread.sleep;
 
-//
-// aasda
-// asdasd
 @Slf4j
 public class Move2KubePlan extends Move2KubeBase {
 
@@ -60,11 +57,6 @@ public class Move2KubePlan extends Move2KubeBase {
 	}
 
 	private void addSourceCode(String workspaceID, String projectID, String ZIPPath) {
-		log.error("*****************************************************************************");
-		log.error("*****************************************************************************");
-		log.error("Add source code on path {}", ZIPPath);
-		log.error("*****************************************************************************");
-		log.error("*****************************************************************************");
 		File file = new File(ZIPPath);
 		ApiClient clientFormData = client;
 		clientFormData.addDefaultHeader("Content-Type", "multipart/form-data");
