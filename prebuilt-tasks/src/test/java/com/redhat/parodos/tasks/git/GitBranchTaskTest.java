@@ -144,7 +144,8 @@ class GitBranchTaskTest {
 
 		// then
 		assertNotNull(result.getError());
-		assertThat(result.getError().toString()).contains("RefNotFoundException");
+		assertThat(result.getError()).isInstanceOf(RuntimeException.class);
+		assertThat(result.getError().toString()).contains("Ref HEAD cannot be resolved");
 		assertEquals(result.getStatus(), WorkStatus.FAILED);
 	}
 

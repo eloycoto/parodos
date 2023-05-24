@@ -60,14 +60,12 @@ public class GitCommitTask extends BaseWorkFlowTask {
 			git.commit().setSign(false).setMessage(commitMessage).call();
 		}
 		catch (IOException e) {
-			log.error("IOException!{}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("No repository at '%s' error: %s".formatted(path, e.getMessage())));
+					new RuntimeException("No repository at '%s' error: %s".formatted(path, e.getMessage())));
 		}
 		catch (Exception e) {
-			log.error("Exception!{}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
-					new Exception("Cannot create the branch on the repository: %s".formatted(e)));
+					new RuntimeException("Cannot create the branch on the repository: %s".formatted(e)));
 		}
 
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext, null);
