@@ -56,8 +56,8 @@ public class OcpOnboardingWorkFlowConfiguration {
 	@Bean
 	WorkFlowOption move2kube() {
 		return new WorkFlowOption.Builder("move2kube", "move2KubeWorkFlow_INFRASTRUCTURE_WORKFLOW")
-				.addToDetails("help application to move to workflow").displayName("move2kube")
-				.setDescription("Move2Kube").build();
+				.addToDetails("Transform the application into a Kubernetes application.").displayName("move2kube")
+				.setDescription("Transform application using move2kube").build();
 	}
 
 	@Bean

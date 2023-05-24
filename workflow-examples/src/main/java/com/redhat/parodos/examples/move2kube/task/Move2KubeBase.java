@@ -28,6 +28,10 @@ public class Move2KubeBase extends BaseInfrastructureWorkFlowTask {
 		this.client.setBasePath(server);
 	}
 
+	public void setAPIClient(ApiClient ApiClient) {
+		client = ApiClient;
+	}
+
 	@Override
 	public List<WorkFlowTaskOutput> getWorkFlowTaskOutputs() {
 		return List.of();

@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.google.common.base.Strings;
 import com.redhat.parodos.workflow.task.enums.WorkFlowTaskOutput;
-import com.redhat.parodos.workflow.task.infrastructure.BaseInfrastructureWorkFlowTask;
+import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.DefaultWorkReport;
 import com.redhat.parodos.workflows.work.WorkContext;
 import com.redhat.parodos.workflows.work.WorkReport;
@@ -22,25 +23,35 @@ import dev.parodos.move2kube.client.model.ProjectInputsValue;
 import dev.parodos.move2kube.client.model.Workspace;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 
-	private ApiClient client = null;
+@Slf4j
+public class Move2KubeTask extends Move2KubeBase {
+
+	private WorkspacesApi  workspacesApi;
+
+	private ProjectsApi projectsApi;
 
 	public Move2KubeTask(String server) {
 		super();
-		this.client = new ApiClient();
-		this.client.setBasePath(server);
+		this.setClient(server);
+	 workspacesApi = new WorkspacesApi(client);
+		projectsApi = new ProjectsApi(client);
+
 	}
+
+	Move2KubeTask(String server, WorkspacesApi wrk, ProjectsApi projects) {
+		super();
+		this.setClient(server);
+		workspacesApi = wrk;
+		projectsApi = projects;
+	}
+
 
 	/**
 	 * Executed by the InfrastructureTask engine as part of the Workflow
 	 */
 	public WorkReport execute(WorkContext workContext) {
-		log.error("**********************************************");
-		log.error("**********************************************");
-		log.error("**********************************************");
-		log.error("Init Move2Kube Project initialization!");
+		log.debug("Init Move2Kube Project initialization!");
 		String workspaceID = null;
 		Map<String, ProjectInputsValue> workspaceInputs = null;
 		try {
@@ -51,12 +62,20 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 			workspaceID = workspace.get().getId();
 			workspaceInputs = workspace.get().getInputs();
 			workContext.put("move2KubeWorkspaceID", workspaceID);
+
+			String projectId = setProject(workspaceID, workspaceInputs,
+					WorkContextUtils.getMainExecutionId(workContext));
+			if (Strings.isNullOrEmpty(projectId)) {
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+						new RuntimeException("Cannot create project on move2kube server"));
+			}
+			workContext.put("move2KubeProjectID", projectId);
 		}
 		catch (ApiException e) {
-			log.error("Cannot get the workspace, error: {}", e.getMessage());
+			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+					new RuntimeException("Cannot setup the project on move2kube: %s".formatted(e.getMessage())));
 		}
-		String projectId = setProject(workspaceID, workspaceInputs, UUID.randomUUID().toString());
-		workContext.put("move2KubeProjectID", projectId);
+
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
 	}
 
@@ -66,42 +85,31 @@ public class Move2KubeTask extends BaseInfrastructureWorkFlowTask {
 	}
 
 	private Optional<Workspace> setWorkspace() throws ApiException {
-		WorkspacesApi workspace = new WorkspacesApi(this.client);
-		return workspace.getWorkspaces().stream().findFirst();
+		return workspacesApi.getWorkspaces().stream().findFirst();
 	}
 
-	private String setProject(String workspaceId, Map<String, ProjectInputsValue> inputs, String workflowId) {
-		ProjectsApi projectsApi = new ProjectsApi(client);
+	private String setProject(String workspaceId, Map<String, ProjectInputsValue> inputs, UUID workflowId)
+			throws ApiException {
 		Project project = new Project();
-		project.setName("WorkFlowID: " + workflowId);
-		project.description("Project for workflow: " + workflowId);
+		project.setName("WorkFlowID: " + workflowId.toString());
+		project.description("Project for workflow execution id: " + workflowId.toString());
 
-		try {
-			CreateProject201Response res = projectsApi.createProject(workspaceId, project);
-			log.error("Setting the id as :{}", res.getId());
-			project.setId(res.getId());
-		}
-		catch (Exception e) {
-			return "";
-		}
+		CreateProject201Response res = projectsApi.createProject(workspaceId, project);
+		project.setId(res.getId());
 
 		if (inputs == null) {
 			return project.getId();
 		}
 
+		// reference files need different client Content-type
 		ApiClient clientFormData = client;
 		clientFormData.addDefaultHeader("Content-Type", "multipart/form-data");
 		ProjectInputsApi projectInputsApi = new ProjectInputsApi(clientFormData);
+		for (Map.Entry<String, ProjectInputsValue> v : inputs.entrySet()) {
+			projectInputsApi.createProjectInput(workspaceId, project.getId(), "reference", v.getValue().getId(),
+					v.getValue().getDescription(), null);
+		}
 
-		inputs.forEach((k, v) -> {
-			try {
-				projectInputsApi.createProjectInput(workspaceId, project.getId(), "reference", v.getId(),
-						v.getDescription(), null);
-			}
-			catch (Exception e) {
-				log.error("Error creating project input: {}", e.getMessage());
-			}
-		});
 		return project.getId();
 	}
 
