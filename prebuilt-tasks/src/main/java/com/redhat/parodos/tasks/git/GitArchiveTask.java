@@ -89,7 +89,6 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 		// Create a ZipFormat instance
 		String tmpdir = Files.createTempDir().getAbsolutePath();
 		Path zipFile = Paths.get(tmpdir + "/output.zip");
-		log.error("Phase 1 of archive");
 		try (FileOutputStream out = new FileOutputStream(zipFile.toAbsolutePath().toString())) {
 			git.archive().setTree(repo.resolve("HEAD")).setPrefix("src/").setFormat("zip").setOutputStream(out).call();
 		}

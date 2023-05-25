@@ -38,7 +38,6 @@ public class GitCloneTask extends BaseWorkFlowTask {
 
 	@Override
 	public WorkReport execute(WorkContext workContext) {
-		log.error("Init Git Clone request");
 		String gitUri = null;
 		String destination = null;
 		String gitBranch = null;
