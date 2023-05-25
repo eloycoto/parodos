@@ -35,9 +35,7 @@ public class Move2KubeTransform extends Move2KubeBase {
 		String workspaceID = (String) workContext.get(getWorkspaceContextKey());
 		String projectID = (String) workContext.get(getProjectContextKey());
 		if (!isPlanCreated(workspaceID, projectID)) {
-			String errorMessage = "Plan for workspace '" + workspaceID + "' and project '" + projectID
-					+ "' is not created";
-			log.error(errorMessage);
+			String errorMessage = "Plan for workspace '%s'' and project '%s' is not created".formatted(workspaceID, projectID);
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, new IllegalArgumentException(errorMessage));
 		}
 
@@ -64,11 +62,11 @@ public class Move2KubeTransform extends Move2KubeBase {
 
 		String url = String.format("http://localhost:8081/workspaces/%s/projects/%s", workspaceID, projectID);
 		String message = String
-				.format("You need to complete some information for your transformation in the following url %s", url);
+				.format("You need to complete some information for your transformation in the following url <a href=\"%s\"> %s</a>", url, url);
 
 		// @TODO userID is the ID, but we need the username, so hardcode it here for now.
 		NotificationRequest request = NotificationRequest.builder().usernames(List.of("test"))
-				.subject("Complete the transformation steps").body(message).build();
+				.subject("Complete the Move2Kube transformation steps").body(message).build();
 
 		HttpEntity<NotificationRequest> notificationRequestHttpEntity = RestUtils.getRequestWithHeaders(request, "test",
 				"test");
@@ -94,14 +92,12 @@ public class Move2KubeTransform extends Move2KubeBase {
 		try {
 			GetPlan200Response response = planApi.getPlan(workspaceID, projectID);
 			if (response == null) {
-				log.error("Plan is null");
 				return false;
 
 			}
 			this.plan = response.toJson();
 		}
 		catch (Exception e) {
-			log.error("Plan execption here {}", e.getMessage());
 			return false;
 		}
 		return true;
