@@ -2,8 +2,11 @@ package com.redhat.parodos.examples.move2kube.task;
 
 import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.WorkStatus;
+import dev.parodos.move2kube.ApiException;
+import dev.parodos.move2kube.api.ProjectInputsApi;
 import dev.parodos.move2kube.client.model.CreateProject201Response;
 import dev.parodos.move2kube.client.model.Project;
+import dev.parodos.move2kube.client.model.ProjectInputsValue;
 import dev.parodos.move2kube.client.model.Workspace;
 
 import com.redhat.parodos.workflows.work.WorkContext;
@@ -30,7 +33,10 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -41,12 +47,19 @@ public class Move2KubeTaskTest  {
 
     private ProjectsApi projectsApi;
 
+    private ProjectInputsApi projectInputsApi;
+
+
+    private static String move2KubeWorkspaceIDCtxKey = "move2KubeWorkspaceID";
+    private static String move2KubeProjectIDCtxKey = "move2KubeProjectID";
+
     @Before
     public void BeforeEach() {
         workspacesApi = Mockito.mock(WorkspacesApi.class);
         projectsApi = Mockito.mock(ProjectsApi.class);
+        projectInputsApi = Mockito.mock(ProjectInputsApi.class);
 
-        task = new Move2KubeTask("http://localhost", workspacesApi, projectsApi);
+        task = new Move2KubeTask("http://localhost", workspacesApi, projectsApi, projectInputsApi);
         log.error("Move2KubeTask BeforeEach");
     }
 
@@ -55,11 +68,18 @@ public class Move2KubeTaskTest  {
         log.error("Move2KubeTask AfterEach");
     }
     @Test
-    public void testExecution() {
+    public void testValidExecution() {
         // given
         WorkContext workContext = getSampleWorkContext();
+        Workspace workspace = getSampleWorkspace("test");
+
+        Map<String, ProjectInputsValue> inputs = new HashMap<String, ProjectInputsValue>();
+        inputs.put("test1", getSampleProjectInput("test1"));
+        inputs.put("test2", getSampleProjectInput("test2"));
+        workspace.setInputs(inputs);
+
         assertDoesNotThrow(() -> {
-                    Mockito.when(workspacesApi.getWorkspaces()).thenReturn(List.of(getSampleWorkspace("test")));
+                    Mockito.when(workspacesApi.getWorkspaces()).thenReturn(List.of(workspace));
                     Mockito.when(projectsApi.createProject(Mockito.any(), Mockito.any())).thenReturn(getSampleProject("test"));
         });
 
@@ -69,8 +89,57 @@ public class Move2KubeTaskTest  {
         // then
         assertNull(report.getError());
         assertEquals(report.getStatus(), WorkStatus.COMPLETED);
-        assertNotNull(report.getWorkContext().get("move2KubeWorkspaceID"));
-        assertNotNull(report.getWorkContext().get("move2KubeProjectID"));
+        assertNotNull(report.getWorkContext().get(move2KubeWorkspaceIDCtxKey));
+        assertNotNull(report.getWorkContext().get(move2KubeProjectIDCtxKey));
+
+        assertDoesNotThrow(() -> {
+            Mockito.verify(workspacesApi, Mockito.times(1)).getWorkspaces();
+            Mockito.verify(projectsApi, Mockito.times(1)).createProject(Mockito.any(), Mockito.any());
+            Mockito.verify(projectInputsApi, Mockito.times(2)).createProjectInput(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        });
+    }
+
+    @Test
+    public void testWithoutValidWorkspace() {
+        // given
+        WorkContext workContext = getSampleWorkContext();
+        assertDoesNotThrow(() -> {
+            Mockito.when(workspacesApi.getWorkspaces()).thenReturn(Collections.emptyList());
+            Mockito.when(projectsApi.createProject(Mockito.any(), Mockito.any())).thenReturn(getSampleProject("test"));
+        });
+
+        // when
+        WorkReport report = task.execute(workContext);
+
+        // then
+        assertNotNull(report.getError());
+        assertEquals(report.getStatus(), WorkStatus.FAILED);
+        assertNull(report.getWorkContext().get(move2KubeWorkspaceIDCtxKey));
+        assertNull(report.getWorkContext().get(move2KubeProjectIDCtxKey));
+
+        assertDoesNotThrow(() -> {
+            Mockito.verify(workspacesApi, Mockito.times(1)).getWorkspaces();
+            Mockito.verify(projectsApi, Mockito.times(0)).createProject(Mockito.any(), Mockito.any());
+        });
+    }
+
+    @Test
+    public void testWithIssuesCreatingProject() {
+        // given
+        WorkContext workContext = getSampleWorkContext();
+        assertDoesNotThrow(() -> {
+            Mockito.when(workspacesApi.getWorkspaces()).thenReturn(List.of(getSampleWorkspace("test")));
+            Mockito.when(projectsApi.createProject(Mockito.any(), Mockito.any())).thenThrow(ApiException.class);
+        });
+
+        // when
+        WorkReport report = task.execute(workContext);
+
+        // then
+        assertNotNull(report.getError());
+        assertEquals(report.getStatus(), WorkStatus.FAILED);
+        assertNotNull(report.getWorkContext().get(move2KubeWorkspaceIDCtxKey));
+        assertNull(report.getWorkContext().get(move2KubeProjectIDCtxKey));
 
         assertDoesNotThrow(() -> {
             Mockito.verify(workspacesApi, Mockito.times(1)).getWorkspaces();
@@ -89,17 +158,19 @@ public class Move2KubeTaskTest  {
         project.setId(UUID.randomUUID().toString());
         return project;
     }
-//    public Project getSampleProject(String name) {
-//        Project project = new Project();
-//        project.setId(UUID.randomUUID().toString());
-//        project.setName(name);
-//        return project;
-//    }
 
     public WorkContext getSampleWorkContext() {
         WorkContext workContext = new WorkContext();
         WorkContextUtils.setMainExecutionId(workContext, UUID.randomUUID());
         return workContext;
+    }
+
+    public ProjectInputsValue getSampleProjectInput( String name)  {
+        ProjectInputsValue projectInput = new ProjectInputsValue();
+        projectInput.setName(name);
+        projectInput.setDescription(name);
+        projectInput.setId(UUID.randomUUID().toString());
+        return projectInput;
     }
 
 }

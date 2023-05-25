@@ -31,19 +31,26 @@ public class Move2KubeTask extends Move2KubeBase {
 
 	private ProjectsApi projectsApi;
 
+	private ProjectInputsApi projectInputsApi;
+
 	public Move2KubeTask(String server) {
 		super();
 		this.setClient(server);
 	 workspacesApi = new WorkspacesApi(client);
 		projectsApi = new ProjectsApi(client);
 
+		ApiClient clientFormData = client;
+		clientFormData.addDefaultHeader("Content-Type", "multipart/form-data");
+		ProjectInputsApi projectInputsApi = new ProjectInputsApi(clientFormData);
 	}
 
-	Move2KubeTask(String server, WorkspacesApi wrk, ProjectsApi projects) {
+	// constructor only used for testing.
+	Move2KubeTask(String server, WorkspacesApi wrk, ProjectsApi projects, ProjectInputsApi projectInputs) {
 		super();
 		this.setClient(server);
 		workspacesApi = wrk;
 		projectsApi = projects;
+		projectInputsApi = projectInputs;
 	}
 
 
@@ -57,7 +64,7 @@ public class Move2KubeTask extends Move2KubeBase {
 		try {
 			Optional<Workspace> workspace = setWorkspace();
 			if (workspace.isEmpty()) {
-				return new DefaultWorkReport(WorkStatus.FAILED, workContext);
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext, new RuntimeException("No move2kube workspace found"));
 			}
 			workspaceID = workspace.get().getId();
 			workspaceInputs = workspace.get().getInputs();
@@ -101,10 +108,6 @@ public class Move2KubeTask extends Move2KubeBase {
 			return project.getId();
 		}
 
-		// reference files need different client Content-type
-		ApiClient clientFormData = client;
-		clientFormData.addDefaultHeader("Content-Type", "multipart/form-data");
-		ProjectInputsApi projectInputsApi = new ProjectInputsApi(clientFormData);
 		for (Map.Entry<String, ProjectInputsValue> v : inputs.entrySet()) {
 			projectInputsApi.createProjectInput(workspaceId, project.getId(), "reference", v.getValue().getId(),
 					v.getValue().getDescription(), null);
