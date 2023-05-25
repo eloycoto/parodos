@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.WorkContext;
 import com.redhat.parodos.workflows.work.WorkStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class GitCloneTaskTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		gitCloneTask = new GitCloneTask();
+		gitCloneTask.setBeanName("GitCloneTask");
 		tempDir = Files.createTempDirectory("git-repo");
 
 		gitRepoPath = tempDir.resolve(".git");
@@ -60,8 +62,8 @@ public class GitCloneTaskTest {
 	public void testWithValidClone() {
 		// given
 		WorkContext workContext = new WorkContext();
-		workContext.put("uri", this.repository.getDirectory().toString());
-		workContext.put("branch", "master");
+		WorkContextUtils.addParameter(workContext, "uri", tempDir.toString());
+		WorkContextUtils.addParameter(workContext, "branch", "master");
 
 		// then
 		var result = this.gitCloneTask.execute(workContext);
@@ -77,15 +79,15 @@ public class GitCloneTaskTest {
 	public void testWithInValidClone() {
 		// given
 		WorkContext workContext = new WorkContext();
-		workContext.put("uri", "InvalidFolder");
-		workContext.put("branch", "master");
+		WorkContextUtils.addParameter(workContext, "uri", "invalidFolder");
+		WorkContextUtils.addParameter(workContext, "branch", "master");
 
 		// then
 		var result = this.gitCloneTask.execute(workContext);
 
 		// when
 		assertNotNull(result.getError());
-		assertThat(result.getError().toString()).contains("Remote repository InvalidFolder is not available");
+		assertThat(result.getError().toString()).contains("Remote repository invalidFolder is not available");
 		assertEquals(result.getStatus(), WorkStatus.FAILED);
 		assertNull(result.getWorkContext().get("gitDestination"));
 		assertNull(result.getWorkContext().get("gitUri"));
@@ -95,8 +97,8 @@ public class GitCloneTaskTest {
 	public void testWithInValidBranch() {
 		// given
 		WorkContext workContext = new WorkContext();
-		workContext.put("uri", this.repository.getDirectory().toString());
-		workContext.put("branch", "fooBranch");
+		WorkContextUtils.addParameter(workContext, "uri", tempDir.toString());
+		WorkContextUtils.addParameter(workContext, "branch", "fooBranch");
 
 		// then
 		var result = this.gitCloneTask.execute(workContext);
