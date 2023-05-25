@@ -35,7 +35,8 @@ public class Move2KubeTransform extends Move2KubeBase {
 		String workspaceID = (String) workContext.get(getWorkspaceContextKey());
 		String projectID = (String) workContext.get(getProjectContextKey());
 		if (!isPlanCreated(workspaceID, projectID)) {
-			String errorMessage = "Plan for workspace '%s'' and project '%s' is not created".formatted(workspaceID, projectID);
+			String errorMessage = "Plan for workspace '%s'' and project '%s' is not created".formatted(workspaceID,
+					projectID);
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, new IllegalArgumentException(errorMessage));
 		}
 
@@ -61,8 +62,9 @@ public class Move2KubeTransform extends Move2KubeBase {
 	private boolean sendNotification(String userID, String workspaceID, String projectID) {
 
 		String url = String.format("http://localhost:8081/workspaces/%s/projects/%s", workspaceID, projectID);
-		String message = String
-				.format("You need to complete some information for your transformation in the following url <a href=\"%s\"> %s</a>", url, url);
+		String message = String.format(
+				"You need to complete some information for your transformation in the following url <a href=\"%s\"> %s</a>",
+				url, url);
 
 		// @TODO userID is the ID, but we need the username, so hardcode it here for now.
 		NotificationRequest request = NotificationRequest.builder().usernames(List.of("test"))
