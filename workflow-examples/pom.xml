@@ -111,26 +111,13 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>dev.parodos</groupId>
-            <artifactId>workflow-engine</artifactId>
-            <version>1.0.11-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.parodos</groupId>
-            <artifactId>workflow-engine</artifactId>
-            <version>1.0.11-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.parodos</groupId>
-            <artifactId>workflow-engine</artifactId>
-            <version>1.0.11-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

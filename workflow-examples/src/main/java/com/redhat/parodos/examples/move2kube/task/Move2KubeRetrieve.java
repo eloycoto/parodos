@@ -24,6 +24,7 @@ public class Move2KubeRetrieve extends Move2KubeBase {
 	private String plan;
 
 	private ProjectOutputsApi output;
+
 	public Move2KubeRetrieve(String server) {
 		super();
 		this.setClient(server);
@@ -45,7 +46,8 @@ public class Move2KubeRetrieve extends Move2KubeBase {
 		try {
 			File file = output.getProjectOutput(workspaceID, projectID, transformID);
 			if (file == null) {
-				return new DefaultWorkReport(WorkStatus.FAILED, workContext, new RuntimeException("Couldn't get file from transformation"));
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+						new RuntimeException("Couldn't get file from transformation"));
 			}
 			tempDir = Files.createTempDirectory(String.format("move2kube-transform-%s", transformID));
 			extractZipFile(file, tempDir);

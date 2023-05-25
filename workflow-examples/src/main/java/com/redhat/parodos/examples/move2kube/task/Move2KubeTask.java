@@ -23,11 +23,10 @@ import dev.parodos.move2kube.client.model.ProjectInputsValue;
 import dev.parodos.move2kube.client.model.Workspace;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class Move2KubeTask extends Move2KubeBase {
 
-	private WorkspacesApi  workspacesApi;
+	private WorkspacesApi workspacesApi;
 
 	private ProjectsApi projectsApi;
 
@@ -36,7 +35,7 @@ public class Move2KubeTask extends Move2KubeBase {
 	public Move2KubeTask(String server) {
 		super();
 		this.setClient(server);
-	 workspacesApi = new WorkspacesApi(client);
+		workspacesApi = new WorkspacesApi(client);
 		projectsApi = new ProjectsApi(client);
 
 		ApiClient clientFormData = client;
@@ -53,7 +52,6 @@ public class Move2KubeTask extends Move2KubeBase {
 		projectInputsApi = projectInputs;
 	}
 
-
 	/**
 	 * Executed by the InfrastructureTask engine as part of the Workflow
 	 */
@@ -64,7 +62,8 @@ public class Move2KubeTask extends Move2KubeBase {
 		try {
 			Optional<Workspace> workspace = setWorkspace();
 			if (workspace.isEmpty()) {
-				return new DefaultWorkReport(WorkStatus.FAILED, workContext, new RuntimeException("No move2kube workspace found"));
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+						new RuntimeException("No move2kube workspace found"));
 			}
 			workspaceID = workspace.get().getId();
 			workspaceInputs = workspace.get().getInputs();
