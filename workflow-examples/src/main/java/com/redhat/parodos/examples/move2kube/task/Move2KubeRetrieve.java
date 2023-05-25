@@ -23,9 +23,17 @@ public class Move2KubeRetrieve extends Move2KubeBase {
 
 	private String plan;
 
+	private ProjectOutputsApi output;
 	public Move2KubeRetrieve(String server) {
 		super();
 		this.setClient(server);
+		output = new ProjectOutputsApi(client);
+	}
+
+	public Move2KubeRetrieve(String server, ProjectOutputsApi outputsApi) {
+		super();
+		this.setClient(server);
+		output = outputsApi;
 	}
 
 	public WorkReport execute(WorkContext workContext) {
@@ -33,10 +41,12 @@ public class Move2KubeRetrieve extends Move2KubeBase {
 		String projectID = (String) workContext.get(getProjectContextKey());
 		String transformID = (String) workContext.get(getTransformContextKey());
 		String sourcePath = (String) workContext.get("gitDestination").toString();
-		ProjectOutputsApi output = new ProjectOutputsApi(client);
 		Path tempDir = null;
 		try {
 			File file = output.getProjectOutput(workspaceID, projectID, transformID);
+			if (file == null) {
+				return new DefaultWorkReport(WorkStatus.FAILED, workContext, new RuntimeException("Couldn't get file from transformation"));
+			}
 			tempDir = Files.createTempDirectory(String.format("move2kube-transform-%s", transformID));
 			extractZipFile(file, tempDir);
 		}
