@@ -34,7 +34,6 @@ public class Move2KubeTransform extends Move2KubeBase {
 	public WorkReport execute(WorkContext workContext) {
 		String workspaceID = (String) workContext.get(getWorkspaceContextKey());
 		String projectID = (String) workContext.get(getProjectContextKey());
-		log.error("---> Executing transform here");
 		if (!isPlanCreated(workspaceID, projectID)) {
 			String errorMessage = "Plan for workspace '" + workspaceID + "' and project '" + projectID
 					+ "' is not created";
@@ -47,17 +46,14 @@ public class Move2KubeTransform extends Move2KubeBase {
 			workContext.put(getTransformContextKey(), transformID);
 		}
 		catch (IllegalArgumentException | IOException e) {
-			log.error("transform failed Illegal: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
 		}
 		catch (ApiException e) {
-			log.error("transform failed APIExecptrion: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
 		}
 
 		String userID = String.valueOf(WorkContextUtils.getUserId(workContext));
 		if (!sendNotification(userID, workspaceID, projectID)) {
-			log.error("Cannot notify user about the transformation status");
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new RuntimeException("Cannot notify user about the transformation status"));
 		}
@@ -66,10 +62,6 @@ public class Move2KubeTransform extends Move2KubeBase {
 
 	private boolean sendNotification(String userID, String workspaceID, String projectID) {
 
-		// URI baseURI = URI.create(this.client.getBasePath());
-		// URI projectURI = baseURI.resolve(String.format("workspaces/%s/projects/%s",
-		// workspaceID, projectID));
-		// String url = projectURI.toString();
 		String url = String.format("http://localhost:8081/workspaces/%s/projects/%s", workspaceID, projectID);
 		String message = String
 				.format("You need to complete some information for your transformation in the following url %s", url);

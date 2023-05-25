@@ -45,20 +45,17 @@ public class TransformChecker extends BaseWorkFlowCheckerTask {
 		String projectID = (String) workContext.get(projectContextKey);
 		String transformID = (String) workContext.get(transformContextKey);
 		if (Strings.isNullOrEmpty(transformID)) {
-			log.error("Failing on no transformID");
 			return new DefaultWorkReport(WorkStatus.PENDING, workContext,
-					new IllegalArgumentException("There is no running transform ID"));
+					new IllegalArgumentException("There is no transform ID"));
 		}
 		ProjectsApi project = new ProjectsApi(client);
 		try {
 			Project res = project.getProject(workspaceID, projectID);
 			ProjectOutputsValue output = Objects.requireNonNull(res.getOutputs()).get(transformID);
 			if (output == null) {
-				log.error("Failing in the project output!");
 				return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 						new IllegalArgumentException("Cannot get the project transformation output from the list"));
 			}
-			log.error("Failing in the project output is --->{}!", output.getStatus());
 			if (!Objects.equals(output.getStatus(), "done")) {
 				return new DefaultWorkReport(WorkStatus.FAILED, workContext);
 			}
@@ -68,7 +65,8 @@ public class TransformChecker extends BaseWorkFlowCheckerTask {
 					"Cannot get current project for the workflow, error:" + e.getMessage()));
 		}
 		catch (Exception e) {
-			log.error("The error is here merda!{} {}", e.getMessage(), e);
+			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
+					new IllegalArgumentException("Transform checker cannot be validated:" + e.getMessage()));
 		}
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
 	}
