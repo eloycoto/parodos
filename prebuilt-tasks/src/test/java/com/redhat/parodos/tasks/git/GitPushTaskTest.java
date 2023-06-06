@@ -80,7 +80,7 @@ public class GitPushTaskTest extends TestCase {
 
 		// then
 		assertThat(params).isNotNull();
-		assertThat(params.size()).isEqualTo(2);
+		assertThat(params.size()).isEqualTo(3);
 		assertThat(params.get(0).getKey()).isEqualTo("path");
 	}
 
