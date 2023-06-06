@@ -24,7 +24,7 @@ import java.nio.file.Path;
 @Slf4j
 public class GitCloneTestTask {
 
-//    private String sshKeyPath = "/home/eloy/.ssh/id_rsa";
+    //private String sshKeyPath = "/home/eloy/.ssh/id_rsa";
     private String sshKeyPath = "/tmp/keys/id_rsa";
     private String repoPath = "git@github.com:eloycoto/merda.git";
 
@@ -56,7 +56,7 @@ public class GitCloneTestTask {
             protected void configure(OpenSshConfig.Host host, Session session ) {
                 session.setConfig("StrictHostKeyChecking", "no");
                 session.setConfig("PreferredAuthentications", "publickey");
-//                session.setConfig("IdentifyFile", sshKeyPath);
+                session.setConfig("IdentifyFile", sshKeyPath);
                 //session.setConfig("user", "eloycoto");
             }
 
@@ -78,7 +78,9 @@ public class GitCloneTestTask {
                 log.error("-------------------------------------------------------");
                 log.error("-------------------------------------------------------");
                 log.error("-------------------------------------------------------");
+                defaultJSch.removeAllIdentity();
                 defaultJSch.addIdentity(sshKeyPath, "");
+                log.error("GetIdentityNames --> {}", defaultJSch.getIdentityNames());
                 log.error("xxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 log.error("xxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 return defaultJSch;
