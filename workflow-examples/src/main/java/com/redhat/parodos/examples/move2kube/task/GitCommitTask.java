@@ -5,8 +5,11 @@ import java.util.stream.Collectors;
 
 import com.redhat.parodos.workflow.parameter.WorkParameter;
 import com.redhat.parodos.workflows.work.WorkContext;
+import com.redhat.parodos.workflows.work.WorkReport;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GitCommitTask extends com.redhat.parodos.tasks.git.GitCommitTask {
 
 	@Override
@@ -18,6 +21,16 @@ public class GitCommitTask extends com.redhat.parodos.tasks.git.GitCommitTask {
 	public String getRepoPath(WorkContext workContext) {
 		// comes from GitClonePrebuiltTask
 		return workContext.get("gitDestination").toString();
+	}
+
+	@Override
+	public WorkReport execute(WorkContext workContext) {
+		WorkReport report = super.execute(workContext);
+		if (report.getError() != null) {
+			log.error("Failed due to {}", report.getError().getMessage());
+			log.error("Failed due to {}", report.getError());
+		}
+		return report;
 	}
 
 }

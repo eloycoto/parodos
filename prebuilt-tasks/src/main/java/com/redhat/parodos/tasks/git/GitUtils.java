@@ -37,15 +37,14 @@ public abstract class GitUtils {
 		return new FileRepositoryBuilder().setGitDir(gitDir.toFile()).build();
 	}
 
-
 	public static TransportConfigCallback getTransport(Path sshKeyPath) throws IOException {
 		if (!sshKeyPath.toFile().exists()) {
-			throw new IOException("SSH key file is not present");
+			throw new IOException("SSH key file at '%s' does not exists".formatted(sshKeyPath.toString()));
 		}
 
 		var sshSessionFactory = new JschConfigSessionFactory() {
 			@Override
-			protected void configure(OpenSshConfig.Host host, Session session ) {
+			protected void configure(OpenSshConfig.Host host, Session session) {
 				session.setConfig("StrictHostKeyChecking", "no");
 				session.setConfig("PreferredAuthentications", "publickey");
 			}
@@ -66,6 +65,5 @@ public abstract class GitUtils {
 			}
 		};
 	}
-
 
 }

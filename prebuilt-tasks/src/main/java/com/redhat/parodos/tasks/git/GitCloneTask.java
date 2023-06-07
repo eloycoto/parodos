@@ -3,6 +3,7 @@ package com.redhat.parodos.tasks.git;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import com.redhat.parodos.workflow.exception.MissingParameterException;
@@ -41,28 +42,31 @@ public class GitCloneTask extends BaseWorkFlowTask {
 		String gitUri = null;
 		String destination = null;
 		String gitBranch = null;
+		String gitCredentials = null;
 
 		try {
 			gitUri = this.getRequiredParameterValue(GitConstants.URI);
 			gitBranch = this.getOptionalParameterValue(GitConstants.BRANCH, GitConstants.DEFAULT_BRANCH);
-			destination = cloneRepo(gitUri, gitBranch);
+			gitCredentials = this.getOptionalParameterValue("credentials", "");
+			destination = cloneRepo(gitUri, gitBranch, gitCredentials);
 		}
 		catch (MissingParameterException e) {
-			log.debug("Failed to resolve required parameter: {}", e.getMessage());
+			log.error("Failed to resolve required parameter: {}", e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext, e);
 		}
 		catch (TransportException e) {
-			log.debug("Cannot connect to repository server '{}' error: {}", gitUri, e.getMessage());
+			log.error("Cannot connect to repository server '{}' error: {}", gitUri, e.getMessage());
+			log.error("E--->{}", e);
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("cannot connect to the repository server"));
 		}
 		catch (InvalidRemoteException e) {
-			log.debug("remote repository server '{}' is not available, error: {}", gitUri, e.getMessage());
+			log.error("remote repository server '{}' is not available, error: {}", gitUri, e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("Remote repository " + gitUri + " is not available"));
 		}
 		catch (IOException | GitAPIException e) {
-			log.debug("Cannot clone repository: {} {}", gitUri, e.getMessage());
+			log.error("Cannot clone repository: {} {}", gitUri, e.getMessage());
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("cannot clone repository, error: " + e.getMessage()));
 		}
@@ -72,10 +76,30 @@ public class GitCloneTask extends BaseWorkFlowTask {
 		return new DefaultWorkReport(WorkStatus.COMPLETED, workContext, null);
 	}
 
-	private String cloneRepo(String gitUri, String gitBranch)
+	private String cloneRepo(String gitUri, String gitBranch, String credentials)
 			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+
 		String tmpDir = Files.createTempDirectory("GitTaskClone").toAbsolutePath().toString();
-		Git.cloneRepository().setURI(gitUri).setBranch("refs/heads/" + gitBranch).setDirectory(new File(tmpDir)).call();
+		String repoPath = "git@github.com:eloycoto/spring-helloworld.git";
+		String sshKeyPath = "/opt/keys/id_rsa";
+
+		Path path = Path.of(sshKeyPath);
+		Git git = Git.cloneRepository().setURI(repoPath).setBranch("refs/heads/main").setDirectory(new File(tmpDir))
+				.setTransportConfigCallback(GitUtils.getTransport(path)).call();
+
+		// CloneCommand cloneCommand =
+		// Git.cloneRepository().setURI(gitUri).setBranch("refs/heads/" + gitBranch)
+		// .setDirectory(new File(tmpDir));
+		// log.error("Credentials are located in: {}", credentials);
+		// if (!Strings.isNullOrEmpty(credentials)) {
+		// log.error("CLONEREPO-Credentials --->{}", credentials);
+		// log.error("CLONEREPO-Credentials --->{}", credentials);
+		// log.error("CLONEREPO-Credentials --->{}", credentials);
+		// log.error("CLONEREPO-Credentials --->{}", credentials);
+		// log.error("CLONEREPO-Credentials --->{}", credentials);
+		// cloneCommand.setTransportConfigCallback(GitUtils.getTransport(Path.of(credentials)));
+		// }
+		// cloneCommand.call();
 		return tmpDir;
 	}
 

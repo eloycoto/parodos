@@ -14,7 +14,6 @@ import com.redhat.parodos.workflows.work.DefaultWorkReport;
 import com.redhat.parodos.workflows.work.WorkContext;
 import com.redhat.parodos.workflows.work.WorkReport;
 import com.redhat.parodos.workflows.work.WorkStatus;
-import io.netty.handler.codec.dns.TcpDnsResponseDecoder;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +33,8 @@ public class GitPushTask extends BaseWorkFlowTask {
 						.description("path where the git repo is located").build(),
 				WorkParameter.builder().key(GitConstants.GIT_REMOTE).type(WorkParameterType.TEXT).optional(false)
 						.description("path where the git repo is located").build(),
-		WorkParameter.builder().key("credentials").type(WorkParameterType.TEXT).optional(true)
-				.description("Git credential").build());
+				WorkParameter.builder().key("credentials").type(WorkParameterType.TEXT).optional(true)
+						.description("Git credential").build());
 	}
 
 	public String getRepoPath(WorkContext workContext) {
@@ -53,9 +52,14 @@ public class GitPushTask extends BaseWorkFlowTask {
 		Repository repo = null;
 		String remote = "";
 		try {
+			log.error("Phase 1");
 			remote = this.getRequiredParameterValue(GitConstants.GIT_REMOTE);
+
+			log.error("Phase 2");
 			String credentials = this.getOptionalParameterValue("credentials", "");
+			log.error("Phase 3");
 			repo = getRepo(path);
+			log.error("Phase 4");
 			push(repo, remote, credentials);
 		}
 		catch (MissingParameterException e) {
@@ -87,13 +91,14 @@ public class GitPushTask extends BaseWorkFlowTask {
 		return GitUtils.getRepo(path);
 	}
 
-	private void push(Repository repo, String remoteName, String credentials) throws FileNotFoundException, IOException, GitAPIException {
+	private void push(Repository repo, String remoteName, String credentials)
+			throws FileNotFoundException, IOException, GitAPIException {
 		Git git = new Git(repo);
 
 		try {
 			PushCommand push = git.push().setForce(false).setRemote(remoteName);
 			if (!Strings.isNullOrEmpty(credentials)) {
-                push.setTransportConfigCallback(GitUtils.getTransport(Path.of(credentials)));
+				push.setTransportConfigCallback(GitUtils.getTransport(Path.of(credentials)));
 			}
 			push.call();
 		}

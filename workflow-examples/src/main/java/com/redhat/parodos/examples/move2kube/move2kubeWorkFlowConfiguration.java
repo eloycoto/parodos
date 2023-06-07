@@ -7,6 +7,7 @@ import com.redhat.parodos.examples.move2kube.checker.TransformChecker;
 import com.redhat.parodos.examples.move2kube.task.GitArchiveTask;
 import com.redhat.parodos.examples.move2kube.task.GitBranchTask;
 import com.redhat.parodos.examples.move2kube.task.GitCommitTask;
+import com.redhat.parodos.examples.move2kube.task.GitPushTask;
 import com.redhat.parodos.examples.move2kube.task.Move2KubePlan;
 import com.redhat.parodos.examples.move2kube.task.Move2KubeRetrieve;
 import com.redhat.parodos.examples.move2kube.task.Move2KubeTask;
@@ -39,6 +40,11 @@ public class move2kubeWorkFlowConfiguration {
 	@Bean
 	GitCommitTask gitCommitTask() {
 		return new GitCommitTask();
+	}
+
+	@Bean
+	GitPushTask gitPushTask() {
+		return new GitPushTask();
 	}
 
 	@Bean
@@ -113,11 +119,12 @@ public class move2kubeWorkFlowConfiguration {
 			@Qualifier("move2KubeTransform") Move2KubeTransform move2KubeTransform,
 			@Qualifier("gitBranchTask") GitBranchTask gitBranchTask,
 			@Qualifier("move2KubeRetrieve") Move2KubeRetrieve move2KubeRetrieve,
-			@Qualifier("gitCommitTask") GitCommitTask gitCommitTask) {
+			@Qualifier("gitCommitTask") GitCommitTask gitCommitTask,
+			@Qualifier("gitPushTask") GitPushTask gitPushTask) {
 		return SequentialFlow.Builder.aNewSequentialFlow()
 				.named("move2KubeWorkFlow" + WorkFlowConstants.INFRASTRUCTURE_WORKFLOW).execute(preparationWorkflow)
 				.then(move2KubePlan).then(move2KubeTransform).then(gitBranchTask).then(move2KubeRetrieve)
-				.then(gitCommitTask).build();
+				.then(gitCommitTask).then(gitPushTask).build();
 	}
 
 }

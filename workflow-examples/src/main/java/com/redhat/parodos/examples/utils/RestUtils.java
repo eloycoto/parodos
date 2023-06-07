@@ -114,6 +114,7 @@ public abstract class RestUtils {
 		String base64Creds = getBase64Creds(username, password);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Basic " + base64Creds);
+		headers.add("Content-Type", "application/json");
 		return new HttpEntity<>(request, headers);
 	}
 
