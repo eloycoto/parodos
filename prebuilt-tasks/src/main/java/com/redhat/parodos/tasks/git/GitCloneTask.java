@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.redhat.parodos.workflow.exception.MissingParameterException;
 import com.redhat.parodos.workflow.parameter.WorkParameter;
 import com.redhat.parodos.workflow.parameter.WorkParameterType;
@@ -17,6 +18,7 @@ import com.redhat.parodos.workflows.work.WorkStatus;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -56,7 +58,6 @@ public class GitCloneTask extends BaseWorkFlowTask {
 		}
 		catch (TransportException e) {
 			log.error("Cannot connect to repository server '{}' error: {}", gitUri, e.getMessage());
-			log.error("E--->{}", e);
 			return new DefaultWorkReport(WorkStatus.FAILED, workContext,
 					new Exception("cannot connect to the repository server"));
 		}
@@ -80,26 +81,13 @@ public class GitCloneTask extends BaseWorkFlowTask {
 			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
 
 		String tmpDir = Files.createTempDirectory("GitTaskClone").toAbsolutePath().toString();
-		String repoPath = "git@github.com:eloycoto/spring-helloworld.git";
-		String sshKeyPath = "/opt/keys/id_rsa";
 
-		Path path = Path.of(sshKeyPath);
-		Git git = Git.cloneRepository().setURI(repoPath).setBranch("refs/heads/main").setDirectory(new File(tmpDir))
-				.setTransportConfigCallback(GitUtils.getTransport(path)).call();
-
-		// CloneCommand cloneCommand =
-		// Git.cloneRepository().setURI(gitUri).setBranch("refs/heads/" + gitBranch)
-		// .setDirectory(new File(tmpDir));
-		// log.error("Credentials are located in: {}", credentials);
-		// if (!Strings.isNullOrEmpty(credentials)) {
-		// log.error("CLONEREPO-Credentials --->{}", credentials);
-		// log.error("CLONEREPO-Credentials --->{}", credentials);
-		// log.error("CLONEREPO-Credentials --->{}", credentials);
-		// log.error("CLONEREPO-Credentials --->{}", credentials);
-		// log.error("CLONEREPO-Credentials --->{}", credentials);
-		// cloneCommand.setTransportConfigCallback(GitUtils.getTransport(Path.of(credentials)));
-		// }
-		// cloneCommand.call();
+		CloneCommand cloneCommand = Git.cloneRepository().setURI(gitUri).setBranch("refs/heads/" + gitBranch)
+				.setDirectory(new File(tmpDir));
+		if (!Strings.isNullOrEmpty(credentials)) {
+			cloneCommand.setTransportConfigCallback(GitUtils.getTransport(Path.of(credentials)));
+		}
+		cloneCommand.call();
 		return tmpDir;
 	}
 
