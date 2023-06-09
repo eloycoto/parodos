@@ -123,10 +123,9 @@ public class Move2KubeRetrieveTest {
 		String zipFileName = "/tmp/test%s.zip".formatted(UUID.randomUUID());
 		String tempDir = "/tmp/%s/".formatted(UUID.randomUUID().toString());
 		File zipFile = new File(zipFileName);
-		String[] fileNames = {
-				"output/project-name/source/output/src/test.txt",
-				"output/project-name/deploy/bar.txt", "output/project-name/deploy/foo.txt",
-				"output/project-name/scripts/bar.sh", "output/project-name/scripts/foo.sh" };
+		String[] fileNames = { "output/project-name/source/output/src/test.txt", "output/project-name/deploy/bar.txt",
+				"output/project-name/deploy/foo.txt", "output/project-name/scripts/bar.sh",
+				"output/project-name/scripts/foo.sh" };
 
 		byte[] buffer = new byte[1024];
 
