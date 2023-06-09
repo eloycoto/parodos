@@ -23,10 +23,7 @@ import com.redhat.parodos.workflows.work.WorkStatus;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jgit.api.ArchiveCommand;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.archive.ZipFormat;
 import org.eclipse.jgit.lib.Repository;
 
 @Slf4j
@@ -83,11 +80,13 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 		return GitUtils.getRepo(path);
 	}
 
-	private static void addFolderContentsToZip(File folder, String parentFolderPath, ZipOutputStream zos) throws IOException {
+	private static void addFolderContentsToZip(File folder, String parentFolderPath, ZipOutputStream zos)
+			throws IOException {
 		for (File file : folder.listFiles()) {
 			if (file.isDirectory()) {
 				addFolderContentsToZip(file, parentFolderPath + "/" + file.getName(), zos);
-			} else {
+			}
+			else {
 				byte[] buffer = new byte[1024];
 				try (FileInputStream fis = new FileInputStream(file)) {
 					String entryPath = parentFolderPath + "/" + file.getName();
@@ -111,8 +110,8 @@ public class GitArchiveTask extends BaseWorkFlowTask {
 		Path repoDir = Path.of(repo.getDirectory().getAbsolutePath()).resolve("..");
 
 		try (FileOutputStream fos = new FileOutputStream(zipFile.toAbsolutePath().toString());
-			 ZipOutputStream zos = new ZipOutputStream(fos)) {
-			addFolderContentsToZip(repoDir.toFile(),GitConstants.SRC_FOLDER, zos);
+				ZipOutputStream zos = new ZipOutputStream(fos)) {
+			addFolderContentsToZip(repoDir.toFile(), GitConstants.SRC_FOLDER, zos);
 		}
 		return zipFile;
 	}

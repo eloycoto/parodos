@@ -76,7 +76,8 @@ public class GitArchiveTaskTest {
 		assertThat(result.getWorkContext().get("gitArchivePath").toString()).contains("output.zip");
 		try {
 			listFilesInZip(result.getWorkContext().get("gitArchivePath").toString());
-		}catch (IOException e) {
+		}
+		catch (IOException e) {
 			return;
 		}
 	}
@@ -87,10 +88,10 @@ public class GitArchiveTaskTest {
 			Enumeration<? extends ZipEntry> entries = zipFile.entries();
 			while (entries.hasMoreElements()) {
 				ZipEntry entry = entries.nextElement();
-				System.out.println(entry.getName());
 			}
 		}
 	}
+
 	@Test
 	public void testWithContextFromAnotherGit() {
 		// given
