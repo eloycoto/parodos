@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @Slf4j
-public class GitPushTaskTest extends TestCase {
+public class GitPushTaskTest {
 
 	private GitPushTask task;
 
