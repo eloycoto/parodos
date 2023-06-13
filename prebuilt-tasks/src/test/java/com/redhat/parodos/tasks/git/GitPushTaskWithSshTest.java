@@ -4,10 +4,10 @@ import com.redhat.parodos.workflow.utils.WorkContextUtils;
 import com.redhat.parodos.workflows.work.WorkContext;
 import com.redhat.parodos.workflows.work.WorkReport;
 import com.redhat.parodos.workflows.work.WorkStatus;
-import junit.framework.TestCase;
+import java.io.FileOutputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.sshd.common.file.FileSystemFactory;
-import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
+import org.apache.sshd.common.config.keys.KeyUtils;
+import org.apache.sshd.common.config.keys.writer.openssh.OpenSSHKeyPairResourceWriter;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
 import org.apache.sshd.server.config.keys.AuthorizedKeysAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
@@ -15,25 +15,23 @@ import org.apache.sshd.util.test.EchoShellFactory;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
-import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.URIish;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.channel.ChannelSession;
-import org.apache.sshd.util.test.CoreTestSupportUtils;
-
-import javax.swing.filechooser.FileSystemView;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.KeyPair;
+import java.util.List;
 import java.util.UUID;
 import org.apache.sshd.git.GitLocationResolver;
 import org.apache.sshd.git.pack.GitPackCommandFactory;
+import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -53,24 +51,51 @@ public class GitPushTaskWithSshTest {
     private static String remoteRepoPathName = "remote-repo";
     private Repository repository;
 
+    private Path credentialsDir;
+    public void createKeys() {
+        SimpleGeneratorHostKeyProvider keyProvider = new SimpleGeneratorHostKeyProvider();
+        keyProvider.setAlgorithm(KeyUtils.RSA_ALGORITHM);
+        keyProvider.setKeySize(2048);
+        assertDoesNotThrow(() -> {
+            credentialsDir = Files.createTempDirectory("credentials");
+            List<KeyPair> keyPair = keyProvider.loadKeys(null);
+            Path privateKeyPah = credentialsDir.resolve("id_rsa");
+            Path publicKeyPath = credentialsDir.resolve("id_rsa.pub");
+            OpenSSHKeyPairResourceWriter keyPairWriter = new OpenSSHKeyPairResourceWriter();
+
+            try (OutputStream out = new FileOutputStream(privateKeyPah.toFile())) {
+                keyPairWriter.writePrivateKey(keyPair.get(0), null, null, out);
+            }
+
+            try (OutputStream out = new FileOutputStream(publicKeyPath.toFile())) {
+                keyPairWriter.writePublicKey(keyPair.get(0), null, out);
+            }
+
+            Files.setPosixFilePermissions(privateKeyPah,  PosixFilePermissions.fromString("rwx------"));
+            Files.setPosixFilePermissions(publicKeyPath,  PosixFilePermissions.fromString("rwxrwxrwx"));
+        });
+    }
+
     @BeforeEach
     public void setUp() throws Exception {
         task = new GitPushTask();
         task.setBeanName("git-push-task");
+        createKeys();
 
         tempDir = Files.createTempDirectory("git-repo");
         Path remoteTempDir = Files.createTempDirectory("git-repo-remote");
         remoteRepoPath = Files.createDirectory(remoteTempDir.resolve(remoteRepoPathName),
                 PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxrwx")));
+
         assertDoesNotThrow(() -> {
             Repository repo = initRepo(remoteRepoPath);
         });
 
         sshd = SshServer.setUpDefaultServer();
         sshd.setPort(2222);
-        FileKeyPairProvider keyPairProvider = new FileKeyPairProvider(Path.of("/opt/keys/id_rsa"));
+        FileKeyPairProvider keyPairProvider = new FileKeyPairProvider(credentialsDir.resolve("id_rsa"));
         sshd.setKeyPairProvider(keyPairProvider);
-        AuthorizedKeysAuthenticator authorizedKeysAuthenticator = new AuthorizedKeysAuthenticator(Path.of("/opt/keys/id_rsa.pub"));
+        AuthorizedKeysAuthenticator authorizedKeysAuthenticator = new AuthorizedKeysAuthenticator(credentialsDir.resolve("id_rsa.pub"));
         sshd.setPublickeyAuthenticator(authorizedKeysAuthenticator);
         sshd.setShellFactory(new EchoShellFactory());
 
@@ -80,7 +105,6 @@ public class GitPushTaskWithSshTest {
             public Path resolveRootDirectory( String command, String[] args, ServerSession session, FileSystem fs )
                     throws IOException
             {
-                Path path = remoteRepoPath.getParent();
                 return remoteRepoPath.getParent();
             }
         };
@@ -98,16 +122,11 @@ public class GitPushTaskWithSshTest {
             CloneCommand command = new CloneCommand();
             command.setDirectory(tempDir.toFile());
             command.setURI("ssh://eloy@localhost:2222/remote-repo");
-            command.setTransportConfigCallback(GitUtils.getTransport(Path.of("/opt/keys/id_rsa")));
-            command.call();
+
+            command.setTransportConfigCallback(GitUtils.getTransport(credentialsDir.resolve("id_rsa")));
+            Git git = command.call();
+            repository = git.getRepository();
         });
-
-
-//        assertDoesNotThrow(() -> {
-//            tempDir = Files.createTempDirectory("git-repo");
-//            gitRepoPath = tempDir.resolve(GitConstants.GIT_FOLDER);
-//            repository = initRepo(gitRepoPath);
-//        });
     }
 
     @AfterEach
@@ -125,37 +144,56 @@ public class GitPushTaskWithSshTest {
         assertThat(git.getRepository().getFullBranch()).isEqualTo("refs/heads/main");
         assertThat(git.getRepository().getBranch()).isEqualTo("main");
 
-
-//        RemoteAddCommand remoteAddCommand = git.remoteAdd();
-//        remoteAddCommand.setName("origin");
-//        remoteAddCommand.setUri(new URIish("ssh://user@localhost:2222/%s".formatted(remoteRepoPathName)));
-//        remoteAddCommand.call();
-//
         return git.getRepository();
+    }
+
+    private void addCommit(Repository repo) {
+       Git git = new Git(repo);
+
+        assertDoesNotThrow(() -> {
+            Files.write(tempDir.resolve("file.txt"), "Git Push!".getBytes());
+            git.add().addFilepattern(".").call();
+            git.commit().setMessage("next commit").setSign(false).call();
+        });
     }
 
 
     @Test
-    public void test() {
-//        log.error("Sleep here!");
-//        assertDoesNotThrow(() -> {
-//            Thread.sleep(2000000);
-//        });
+    public void testWithValidInfo() {
 
         // given
         WorkContext ctx = getSampleContext();
         ctx.put("path", tempDir.toString());
         WorkContextUtils.addParameter(ctx, "remote", "origin");
-        WorkContextUtils.addParameter(ctx, "credentials", "/opt/keys/id_rsa");
+        WorkContextUtils.addParameter(ctx, "credentials", credentialsDir.resolve("id_rsa").toString());
+        addCommit(repository);
 
         // then
         task.preExecute(ctx);
         WorkReport report = task.execute(ctx);
 
         // given
-        assertThat(1).isEqualTo(1);
         assertThat(report.getError()).isNull();
         assertThat(report.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+    }
+
+    @Test
+    public void testWithInvalidKeys() {
+
+        // given
+        WorkContext ctx = getSampleContext();
+        ctx.put("path", tempDir.toString());
+        WorkContextUtils.addParameter(ctx, "remote", "origin");
+        WorkContextUtils.addParameter(ctx, "credentials", credentialsDir.resolve("invalid").toString());
+        addCommit(repository);
+
+        // then
+        task.preExecute(ctx);
+        WorkReport report = task.execute(ctx);
+
+        // given
+        assertThat(report.getError()).isNotNull();
+        assertThat(report.getStatus()).isEqualTo(WorkStatus.FAILED);
     }
 
     private WorkContext getSampleContext() {
