@@ -52,14 +52,9 @@ public class GitPushTask extends BaseWorkFlowTask {
 		Repository repo = null;
 		String remote = "";
 		try {
-			log.error("Phase 1");
 			remote = this.getRequiredParameterValue(GitConstants.GIT_REMOTE);
-
-			log.error("Phase 2");
 			String credentials = this.getOptionalParameterValue("credentials", "");
-			log.error("Phase 3");
 			repo = getRepo(path);
-			log.error("Phase 4");
 			push(repo, remote, credentials);
 		}
 		catch (MissingParameterException e) {

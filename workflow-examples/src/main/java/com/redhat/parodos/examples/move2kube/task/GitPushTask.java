@@ -21,26 +21,12 @@ public class GitPushTask extends com.redhat.parodos.tasks.git.GitPushTask {
 
 	@Override
 	public WorkReport execute(WorkContext workContext) {
-
-		String credentials = this.getOptionalParameterValue("credentials", "");
-		log.error("AllCredentials --->{}", getAllParameters(workContext));
-		log.error("Credentials ----> {}", credentials);
-		log.error("Credentials ----> {}", credentials);
-		log.error("Credentials ----> {}", credentials);
-		log.error("Credentials ----> {}", credentials);
-		log.error("Credentials ----> {}", credentials);
-		log.error("Path-->", Path.of(credentials));
-		log.error("Path-file-> Exists {}", Path.of(credentials).toFile().exists());
-		log.error("Path-file-> Exists invalid {}", Path.of("/opt/keys/eloy").toFile().exists());
 		WorkReport report = super.execute(workContext);
-		log.error("GitPush OUTPUT------> {}", report.getError());
 		return report;
 	}
 
 	public String getRepoPath(WorkContext workContext) {
 		String repo = workContext.get("gitDestination").toString();
-		log.error("REPO is ---> {}", repo);
-		// comes from GitClonePrebuiltTask
 		return repo;
 	}
 

@@ -22,15 +22,4 @@ public class GitCommitTask extends com.redhat.parodos.tasks.git.GitCommitTask {
 		// comes from GitClonePrebuiltTask
 		return workContext.get("gitDestination").toString();
 	}
-
-	@Override
-	public WorkReport execute(WorkContext workContext) {
-		WorkReport report = super.execute(workContext);
-		if (report.getError() != null) {
-			log.error("Failed due to {}", report.getError().getMessage());
-			log.error("Failed due to {}", report.getError());
-		}
-		return report;
-	}
-
 }
